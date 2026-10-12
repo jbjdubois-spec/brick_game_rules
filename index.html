@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Retro Nono : choisis ton jeu, ton niveau et ta mission pour le jeu de briques de l'École des Bois.">
+<meta name="description" content="Retro Nono : choisis ton jeu, ton niveau et ta mission pour le jeu de briques imprimé en 3D.">
 <title>Retro Nono</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
@@ -219,7 +219,7 @@ footer { color: var(--muted); font-size: 18px; text-align: center; }
     <div class="galerie" id="galerie"></div>
   </section>
 
-  <footer>Jeu imprimé en 3D pour l'École des Bois · 50 pièces · plateau de 10 × 20 cases</footer>
+  <footer>Jeu imprimé en 3D · 50 pièces · plateau de 10 × 20 cases</footer>
 </div>
 
 <script>
@@ -556,7 +556,7 @@ footer { color: var(--muted); font-size: 18px; text-align: center; }
     g.fillStyle = "#5A47A6"; g.fillRect(0, 65, W, 15);
     // lune pixel
     g.fillStyle = "#FFE9A8"; g.fillRect(262, 12, 12, 12); g.fillStyle = "#4A3792"; g.fillRect(268, 12, 6, 6);
-    // sapins (la forêt de l'École des Bois), deux plans
+    // sapins, deux plans
     for (let k = -1; k < 12; k++) { const x = ((k * 34 - dx * 0.25) % (34 * 11) + 34 * 11) % (34 * 11) - 20; sapin(x, SOL - 6, 22 + (k % 3) * 4, "#2C6B4A"); }
     for (let k = -1; k < 9; k++) { const x = ((k * 47 + 12 - dx * 0.55) % (47 * 8) + 47 * 8) % (47 * 8) - 24; sapin(x, SOL, 30 + (k % 2) * 6, "#1E6B30"); }
     // sol
