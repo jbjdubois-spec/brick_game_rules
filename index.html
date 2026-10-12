@@ -32,8 +32,10 @@ header { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 20px; ju
 h1 { margin: 0; font-family: var(--pixel); font-weight: 400; font-size: clamp(15px, 2.6vw, 20px); line-height: 1.5; text-wrap: balance; }
 h1 span { color: var(--cyan); }
 .son { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.son label { color: var(--muted); font-size: 18px; display: flex; align-items: center; gap: 6px; }
-input[type=range] { accent-color: var(--gold); width: 110px; }
+.son button.petit { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 8px 12px; font-size: 9px; }
+.son .ico { width: 16px; height: 16px; display: block; image-rendering: pixelated; }
+.son button.petit[aria-pressed="true"]#musique { background: var(--gold); color: #2A1B00; }
+.son button.petit[aria-pressed="true"]#muet { background: #5A1F3A; color: #FFD0E4; }
 
 button { font-family: var(--pixel); font-size: 11px; line-height: 1.4; color: var(--ink); background: var(--panel); border: 0; cursor: pointer;
   padding: 12px 14px; min-height: 44px; border-radius: 0;
@@ -180,10 +182,9 @@ footer { color: var(--muted); font-size: 18px; text-align: center; }
       </div>
       <h1>TETRIS <span>by</span> Retro Nono</h1>
     </div>
-    <div class="son" role="group" aria-label="Musique">
-      <button id="musique" class="jaune" aria-pressed="false">♪ Lancer la musique</button>
-      <button id="muet" aria-pressed="false">Couper le son</button>
-      <label for="volume">Volume <input id="volume" type="range" min="0" max="100" value="45"></label>
+    <div class="son" role="group" aria-label="Son">
+      <button id="musique" class="petit" aria-pressed="false" aria-label="Lancer la musique"><span id="ico-musique"></span><span id="txt-musique">Musique</span></button>
+      <button id="muet" class="petit" aria-pressed="false" aria-label="Couper le son"><span id="ico-muet"></span><span id="txt-muet">Son</span></button>
     </div>
   </header>
 
@@ -449,12 +450,48 @@ footer { color: var(--muted); font-size: 18px; text-align: center; }
   const CROCHE = 60 / 150 / 2;
   const sequence = []; { let t = 0; MELODIE.forEach(([n, d]) => { sequence.push({ t, n, d }); t += d; }); }
   const LONG = 64;      // 8 mesures de 8 croches
+  const ICO = {
+    play: '<svg class="ico" viewBox="0 0 8 8" aria-hidden="true"><path d="M2 1h1v6H2zM3 2h1v4H3zM4 3h1v2H4z" fill="currentColor"/></svg>',
+    pause: '<svg class="ico" viewBox="0 0 8 8" aria-hidden="true"><path d="M2 1h1v6H2zM5 1h1v6H5z" fill="currentColor"/></svg>',
+    son: '<svg class="ico" viewBox="0 0 8 8" aria-hidden="true"><path d="M1 3h1v2H1zM2 2h1v4H2zM3 1h1v6H3zM5 2h1v1H5zM6 3h1v2H6zM5 5h1v1H5z" fill="currentColor"/></svg>',
+    muet: '<svg class="ico" viewBox="0 0 8 8" aria-hidden="true"><path d="M1 3h1v2H1zM2 2h1v4H2zM3 1h1v6H3zM5 2h1v1H5zM7 2h1v1H7zM6 3h1v2H6zM5 5h1v1H5zM7 5h1v1H7z" fill="currentColor"/></svg>'
+  };
+  function majBoutonsSon() {
+    $("ico-musique").innerHTML = joue ? ICO.pause : ICO.play;
+    $("txt-musique").textContent = joue ? "Pause" : "Musique";
+    $("musique").setAttribute("aria-pressed", String(joue)); $("musique").setAttribute("aria-label", joue ? "Mettre la musique en pause" : "Lancer la musique");
+    $("ico-muet").innerHTML = muet ? ICO.muet : ICO.son;
+    $("txt-muet").textContent = muet ? "Son coupé" : "Son";
+    $("muet").setAttribute("aria-pressed", String(muet)); $("muet").setAttribute("aria-label", muet ? "Remettre le son" : "Couper le son");
+  }
+  // iPhone : le son Web Audio est coupé par l'interrupteur silencieux, sauf si un élément <audio> joue.
+  // On lance donc en boucle un son muet au premier geste, et on demande la session audio « lecture ».
+  let silence = null;
+  function sonMuet() {
+    const n = 800, b = new ArrayBuffer(44 + n), v = new DataView(b), w = (o, t) => [...t].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+    w(0, "RIFF"); v.setUint32(4, 36 + n, true); w(8, "WAVE"); w(12, "fmt "); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, 8000, true); v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true); w(36, "data"); v.setUint32(40, n, true);
+    for (let i = 0; i < n; i++) v.setUint8(44 + i, 128);
+    return URL.createObjectURL(new Blob([b], { type: "audio/wav" }));
+  }
+  function deverrouiller() {
+    try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
+    initAudio();
+    if (ctx.state !== "running") ctx.resume();
+    try {
+      if (!silence) { silence = new Audio(sonMuet()); silence.loop = true; silence.setAttribute("playsinline", ""); }
+      const p = silence.play(); if (p && p.catch) p.catch(() => {});
+    } catch (e) {}
+    // petit « tic » muet joué tout de suite : débloque le son sur les anciens iOS
+    const o = ctx.createOscillator(), g = ctx.createGain(); g.gain.value = 0; o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.01);
+  }
+  ["touchend", "click", "keydown"].forEach(ev => document.addEventListener(ev, deverrouiller, { capture: true, passive: true }));
   function initAudio() {
     if (ctx) return;
     ctx = new (window.AudioContext || window.webkitAudioContext)();
     maitre = ctx.createGain(); maitre.connect(ctx.destination); reglerVolume();
   }
-  function reglerVolume() { if (maitre) maitre.gain.setTargetAtTime(muet ? 0 : (+$("volume").value / 100) * 0.35, ctx.currentTime, 0.02); }
+  function reglerVolume() { if (maitre) maitre.gain.setTargetAtTime(muet ? 0 : 0.3, ctx.currentTime, 0.02); }
   function voix(type, f, t0, dur, vol) {
     const o = ctx.createOscillator(), g = ctx.createGain();
     o.type = type; o.frequency.value = f; o.connect(g); g.connect(maitre);
@@ -478,19 +515,18 @@ footer { color: var(--muted); font-size: 18px; text-align: center; }
     }
   }
   function lancer() {
-    initAudio(); ctx.resume(); joue = true; prochain = ctx.currentTime + 0.05; pas = 0;
+    deverrouiller(); joue = true;
+    if (muet) { muet = false; reglerVolume(); }        // lancer la musique remet le son
+    prochain = ctx.currentTime + 0.08; pas = 0;
     clearInterval(minuteur); minuteur = setInterval(planifier, 25);
-    $("musique").textContent = "❚❚ Pause musique"; $("musique").setAttribute("aria-pressed", "true");
+    majBoutonsSon();
   }
-  function arreter() { joue = false; clearInterval(minuteur); $("musique").textContent = "♪ Lancer la musique"; $("musique").setAttribute("aria-pressed", "false"); }
+  function arreter() { joue = false; clearInterval(minuteur); majBoutonsSon(); }
   $("musique").addEventListener("click", () => joue ? arreter() : lancer());
-  $("muet").addEventListener("click", () => {
-    muet = !muet; $("muet").textContent = muet ? "Remettre le son" : "Couper le son"; $("muet").setAttribute("aria-pressed", String(muet));
-    if (ctx) reglerVolume();
-  });
-  $("volume").addEventListener("input", () => { if (ctx) reglerVolume(); });
+  $("muet").addEventListener("click", () => { muet = !muet; if (ctx) reglerVolume(); majBoutonsSon(); });   // coupe musique ET bruitages
+  majBoutonsSon();
   function bip(f) { if (!ctx || muet) return; voix("square", f, ctx.currentTime, 0.07, 0.12); }
-  function fanfare() { initAudio(); ctx.resume(); if (muet) return; const t = ctx.currentTime;
+  function fanfare() { deverrouiller(); if (muet) return; const t = ctx.currentTime;
     ["C5", "E5", "G5", "C6"].forEach((n, i) => voix("square", NOTE(n), t + i * 0.09, i === 3 ? 0.35 : 0.09, 0.16)); }
 
   // ---------------- bandeau animé (canvas en pixels) ----------------
