@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Tetris by Retro Nono : choisis ton jeu, ton niveau et ta mission pour le Tetris de l'École des Bois.">
-<title>Tetris by Retro Nono</title>
+<meta name="description" content="Retro Nono : choisis ton jeu, ton niveau et ta mission pour le jeu de briques de l'École des Bois.">
+<title>Retro Nono</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
 <style>
@@ -22,20 +22,25 @@ body { color: var(--ink); font-family: var(--body); font-size: 22px; line-height
   background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 3px); }
 .wrap { max-width: 1040px; margin: 0 auto; padding-inline: 16px; padding-block: 16px 40px; display: grid; gap: 18px; }
 
-header { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 20px; justify-content: space-between; }
+header { display: flex; flex-wrap: nowrap; align-items: center; gap: 12px; justify-content: space-between; }
 .marque { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; min-width: 0; }
-.logo { position: relative; padding: 10px 14px 12px; border: 3px dashed var(--line); border-radius: 6px; display: grid; gap: 4px; justify-items: center; }
+.logo { margin: 0; font-weight: 400; min-width: 0; position: relative; padding: 10px 14px 12px; border: 3px dashed var(--line); border-radius: 6px; display: grid; gap: 4px; justify-items: center; }
 .logo .mot { font-family: var(--pixel); font-size: clamp(16px, 3.4vw, 24px); line-height: 1; letter-spacing: 2px; transform: skewX(-8deg);
   color: var(--gold); text-shadow: 3px 3px 0 #C2410C, 6px 6px 0 #4A1D0C; -webkit-text-stroke: 1px #4A1D0C; }
 .logo .mot b { color: var(--pink); text-shadow: 3px 3px 0 #9D174D, 6px 6px 0 #3B0A1F; font-weight: 400; }
-.logo .prov { font-size: 15px; color: var(--muted); }
-h1 { margin: 0; font-family: var(--pixel); font-weight: 400; font-size: clamp(15px, 2.6vw, 20px); line-height: 1.5; text-wrap: balance; }
+.logo .prov { font-size: 15px; color: var(--muted); font-family: var(--body); }
+.logo .mot { display: block; }
+h1:not(.logo) { margin: 0; font-family: var(--pixel); font-weight: 400; font-size: clamp(15px, 2.6vw, 20px); line-height: 1.5; text-wrap: balance; }
 h1 span { color: var(--cyan); }
 .son { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.son button.petit { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 8px 12px; font-size: 9px; }
-.son .ico { width: 16px; height: 16px; display: block; image-rendering: pixelated; }
-.son button.petit[aria-pressed="true"]#musique { background: var(--gold); color: #2A1B00; }
-.son button.petit[aria-pressed="true"]#muet { background: #5A1F3A; color: #FFD0E4; }
+.son { gap: 4px; flex-wrap: nowrap; flex-shrink: 0; }
+.son button.icone { background: none; box-shadow: none; margin: 0; padding: 6px; min-width: 48px; min-height: 48px; display: grid; place-items: center;
+  color: var(--cyan); filter: drop-shadow(3px 3px 0 #0B0918); }
+.son button.icone:hover { background: none; color: #8FE3FA; }
+.son button.icone:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.son .ico { width: 32px; height: 32px; display: block; image-rendering: pixelated; shape-rendering: crispEdges; }
+#musique[aria-pressed="true"] { color: var(--gold); }
+#muet[aria-pressed="true"] { color: var(--pink); }
 
 button { font-family: var(--pixel); font-size: 11px; line-height: 1.4; color: var(--ink); background: var(--panel); border: 0; cursor: pointer;
   padding: 12px 14px; min-height: 44px; border-radius: 0;
@@ -119,6 +124,9 @@ footer { color: var(--muted); font-size: 18px; text-align: center; }
 
 /* ---------- téléphone ---------- */
 @media (max-width: 700px) {
+  .logo { padding: 8px 10px 10px; }
+  .logo .mot { font-size: 15px; letter-spacing: 1px; }
+  .logo .prov { font-size: 14px; }
   body { font-size: 22px; }
   .etape { gap: 14px; }
   .etape h2 { font-size: 16px; line-height: 1.6; border-bottom: 3px solid var(--line); padding-bottom: 8px; }
@@ -175,16 +183,10 @@ footer { color: var(--muted); font-size: 18px; text-align: center; }
 <body>
 <div class="wrap">
   <header>
-    <div class="marque">
-      <div class="logo" aria-label="Emplacement du logo Retro Nono">
-        <div class="mot">RETRO <b>NONO</b></div>
-        <div class="prov">logo provisoire</div>
-      </div>
-      <h1>TETRIS <span>by</span> Retro Nono</h1>
-    </div>
+    <h1 class="logo"><span class="mot">RETRO <b>NONO</b></span><span class="prov">logo provisoire</span></h1>
     <div class="son" role="group" aria-label="Son">
-      <button id="musique" class="petit" aria-pressed="false" aria-label="Lancer la musique"><span id="ico-musique"></span><span id="txt-musique">Musique</span></button>
-      <button id="muet" class="petit" aria-pressed="false" aria-label="Couper le son"><span id="ico-muet"></span><span id="txt-muet">Son</span></button>
+      <button id="musique" class="icone" aria-pressed="false" aria-label="Lancer la musique et les bruitages" title="Musique"><span id="ico-musique"></span></button>
+      <button id="muet" class="icone" aria-pressed="false" aria-label="Couper le son" title="Son"><span id="ico-muet"></span></button>
     </div>
   </header>
 
@@ -451,17 +453,15 @@ footer { color: var(--muted); font-size: 18px; text-align: center; }
   const sequence = []; { let t = 0; MELODIE.forEach(([n, d]) => { sequence.push({ t, n, d }); t += d; }); }
   const LONG = 64;      // 8 mesures de 8 croches
   const ICO = {
-    play: '<svg class="ico" viewBox="0 0 8 8" aria-hidden="true"><path d="M2 1h1v6H2zM3 2h1v4H3zM4 3h1v2H4z" fill="currentColor"/></svg>',
-    pause: '<svg class="ico" viewBox="0 0 8 8" aria-hidden="true"><path d="M2 1h1v6H2zM5 1h1v6H5z" fill="currentColor"/></svg>',
-    son: '<svg class="ico" viewBox="0 0 8 8" aria-hidden="true"><path d="M1 3h1v2H1zM2 2h1v4H2zM3 1h1v6H3zM5 2h1v1H5zM6 3h1v2H6zM5 5h1v1H5z" fill="currentColor"/></svg>',
-    muet: '<svg class="ico" viewBox="0 0 8 8" aria-hidden="true"><path d="M1 3h1v2H1zM2 2h1v4H2zM3 1h1v6H3zM5 2h1v1H5zM7 2h1v1H7zM6 3h1v2H6zM5 5h1v1H5zM7 5h1v1H7z" fill="currentColor"/></svg>'
+    play: '<svg class="ico" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1h2v1h1v1h1v1h1v1h1v2H8v1H7v1H6v1H5v1H3z" fill="currentColor"/></svg>',
+    pause: '<svg class="ico" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1h3v10H2zM7 1h3v10H7z" fill="currentColor"/></svg>',
+    son: '<svg class="ico" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 4h2v4H1zM3 3h1v6H3zM4 2h1v8H4zM5 1h1v10H5zM8 3h1v1H8zM9 4h1v4H9zM8 8h1v1H8zM10 2h1v1h-1zM11 3h1v6h-1zM10 9h1v1h-1z" fill="currentColor"/></svg>',
+    muet: '<svg class="ico" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 4h2v4H1zM3 3h1v6H3zM4 2h1v8H4zM5 1h1v10H5zM7 4h1v1H7zM8 5h1v1H8zM9 6h1v1H9zM10 7h1v1h-1zM10 4h1v1h-1zM9 5h1v1H9zM8 6h1v1H8zM7 7h1v1H7z" fill="currentColor"/></svg>'
   };
   function majBoutonsSon() {
     $("ico-musique").innerHTML = joue ? ICO.pause : ICO.play;
-    $("txt-musique").textContent = joue ? "Pause" : "Musique";
-    $("musique").setAttribute("aria-pressed", String(joue)); $("musique").setAttribute("aria-label", joue ? "Mettre la musique en pause" : "Lancer la musique");
+    $("musique").setAttribute("aria-pressed", String(joue)); $("musique").setAttribute("aria-label", joue ? "Pause : musique et bruitages arrêtés" : "Lancer la musique et les bruitages");
     $("ico-muet").innerHTML = muet ? ICO.muet : ICO.son;
-    $("txt-muet").textContent = muet ? "Son coupé" : "Son";
     $("muet").setAttribute("aria-pressed", String(muet)); $("muet").setAttribute("aria-label", muet ? "Remettre le son" : "Couper le son");
   }
   // iPhone : le son Web Audio est coupé par l'interrupteur silencieux, sauf si un élément <audio> joue.
@@ -525,8 +525,8 @@ footer { color: var(--muted); font-size: 18px; text-align: center; }
   $("musique").addEventListener("click", () => joue ? arreter() : lancer());
   $("muet").addEventListener("click", () => { muet = !muet; if (ctx) reglerVolume(); majBoutonsSon(); });   // coupe musique ET bruitages
   majBoutonsSon();
-  function bip(f) { if (!ctx || muet) return; voix("square", f, ctx.currentTime, 0.07, 0.12); }
-  function fanfare() { deverrouiller(); if (muet) return; const t = ctx.currentTime;
+  function bip(f) { if (!ctx || muet || !joue) return; voix("square", f, ctx.currentTime, 0.07, 0.12); }
+  function fanfare() { deverrouiller(); if (muet || !joue) return; const t = ctx.currentTime;
     ["C5", "E5", "G5", "C6"].forEach((n, i) => voix("square", NOTE(n), t + i * 0.09, i === 3 ? 0.35 : 0.09, 0.16)); }
 
   // ---------------- bandeau animé (canvas en pixels) ----------------
