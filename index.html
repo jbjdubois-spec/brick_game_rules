@@ -1,3 +1,9 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Tetris by Retro Nono : choisis ton jeu, ton niveau et ta mission pour le Tetris de l'École des Bois.">
 <title>Tetris by Retro Nono</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
@@ -77,20 +83,30 @@ button.jaune:hover { background: #FFE07A; }
 .bravo { font-family: var(--pixel); font-size: 12px; color: var(--ok); min-height: 1.5em; }
 
 .galerie-filtres { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.galerie-filtres span { color: var(--muted); font-size: 20px; margin-right: 6px; }
+.galerie-filtres > span { color: var(--muted); font-size: 20px; margin-right: 6px; }
+.galerie-filtres button { display: grid; gap: 4px; justify-items: center; }
+.galerie-filtres .fb { font-family: var(--body); font-size: 17px; letter-spacing: 1px; }
+.niveaux .desc { font-family: var(--body); font-size: 18px; color: var(--muted); }
+.niveaux button[aria-pressed="true"] .desc { color: #4A3600; }
+.points, .glisse { display: none; }
+.carte svg { max-height: 220px; width: auto; max-width: 100%; }
 .galerie-filtres button[aria-pressed="true"] { background: var(--gold); color: #2A1B00; }
 .galerie { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 14px; }
 .carte { display: grid; gap: 6px; padding: 8px; font-family: var(--body); font-size: 18px; text-align: center; justify-items: center; }
 .carte svg { width: 100%; height: auto; display: block; background: #FFFFFF; }
 .carte .niv5 { color: var(--gold); font-size: 16px; letter-spacing: 1px; }
 .carte[aria-pressed="true"] { background: #2E2558; box-shadow: 0 -4px 0 0 var(--gold), 0 4px 0 0 var(--gold), -4px 0 0 0 var(--gold), 4px 0 0 0 var(--gold); }
-.zoom { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 20px; align-items: start; background: var(--panel); border: 4px solid #7AB536; padding: 16px; }
+.zoom { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 20px; align-items: start; background: var(--panel); border: 4px solid #7AB536; padding: 16px; }
 .zoom svg { width: 100%; height: auto; display: block; background: #FFFFFF; }
+.vues { display: grid; grid-template-columns: minmax(0, 1fr) 76px; gap: 12px; align-items: end; }
+.vue-grande svg { max-height: 420px; width: auto; max-width: 100%; margin: 0 auto; }
+.vue-plateau { margin: 0; display: grid; gap: 4px; justify-items: center; }
+.vue-plateau figcaption { font-size: 16px; color: var(--muted); text-align: center; line-height: 1; }
 .zoom h3 { margin: 0; font-family: var(--pixel); font-weight: 400; font-size: clamp(13px, 2.4vw, 16px); line-height: 1.5; }
 .zoom .info { display: grid; gap: 10px; align-content: start; min-width: 0; }
 .liste-pieces { display: flex; flex-wrap: wrap; gap: 8px 14px; }
-.liste-pieces span { display: inline-flex; align-items: center; gap: 6px; font-size: 21px; }
-@media (max-width: 600px) { .zoom { grid-template-columns: 1fr; } .zoom svg { max-width: 260px; margin: 0 auto; } }
+.liste-pieces span { display: inline-flex; align-items: center; gap: 8px; font-size: 21px; white-space: nowrap; }
+@media (max-width: 600px) { .zoom { grid-template-columns: 1fr; } }
 footer { color: var(--muted); font-size: 18px; text-align: center; }
 @media (max-width: 520px) {
   body { font-size: 20px; }
@@ -98,9 +114,63 @@ footer { color: var(--muted); font-size: 18px; text-align: center; }
   .niveaux .lib { font-size: 19px; }
   .cartouche { min-height: 0; }
 }
+
+/* ---------- téléphone ---------- */
+@media (max-width: 700px) {
+  body { font-size: 22px; }
+  .etape { gap: 14px; }
+  .etape h2 { font-size: 16px; line-height: 1.6; border-bottom: 3px solid var(--line); padding-bottom: 8px; }
+  .etape h2 i { display: block; font-size: 12px; margin-top: 4px; }
+  /* 1 · carrousel des jeux */
+  .jeux { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; margin-inline: -16px; padding: 10px 7.5% 16px;
+    scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .jeux::-webkit-scrollbar { display: none; }
+  .cartouche { flex: 0 0 85%; scroll-snap-align: center; min-height: 270px; padding: 20px; gap: 16px; margin: 4px 0; }
+  .cartouche .nom { font-size: 15px; }
+  .cartouche svg { width: 70px; height: auto; }
+  .cartouche .but { font-size: 30px; line-height: 1.05; color: var(--ink); }
+  .cartouche .etoiles { font-size: 30px; }
+  .points { display: flex; justify-content: center; gap: 10px; }
+  .points span { width: 12px; height: 12px; background: var(--line); }
+  .points span.on { background: var(--c); width: 28px; }
+  .glisse { display: block; margin: 0; text-align: center; color: var(--muted); font-size: 20px; }
+  /* 2 · niveaux en grandes lignes */
+  .niveaux { grid-template-columns: 1fr; gap: 16px; }
+  .niveaux button { grid-template-columns: auto 1fr; grid-template-areas: "st lib" "st desc"; justify-items: start; text-align: left; gap: 2px 16px; padding: 16px 18px; }
+  .niveaux .st { grid-area: st; font-size: 28px; align-self: center; }
+  .niveaux .lib { grid-area: lib; font-family: var(--pixel); font-size: 15px; line-height: 1.6; }
+  .niveaux .desc { grid-area: desc; font-size: 21px; }
+  /* 3 · mission en hauteur */
+  .mission { padding: 16px; gap: 16px; }
+  .mission h3 { font-size: 16px; }
+  .mission .niv { font-size: 24px; }
+  .mission .objectif { font-size: 29px; }
+  .cols { grid-template-columns: 1fr; gap: 18px; }
+  .bloc h4 { font-size: 13px; }
+  .bloc ol, .bloc ul { gap: 8px; }
+  .actions { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  .actions button { font-size: 13px; padding: 16px; width: calc(100% - 8px); }
+  .bravo { text-align: center; font-size: 14px; }
+  /* 4 · cartes images en grand */
+  .galerie-filtres { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .galerie-filtres > span { grid-column: 1 / -1; font-size: 22px; }
+  .galerie-filtres button { padding: 14px 4px; font-size: 12px; margin: 4px; }
+  .galerie-filtres .fb { font-size: 19px; }
+  .galerie { grid-template-columns: 1fr; gap: 22px; }
+  .carte { padding: 16px; gap: 10px; font-size: 28px; }
+  .carte svg { max-height: 360px; }
+  .carte .niv5 { font-size: 24px; }
+  .zoom { padding: 14px; }
+  .zoom h3 { font-size: 16px; }
+  .vues { grid-template-columns: minmax(0, 1fr) 70px; }
+  .vue-grande svg { max-height: 380px; }
+  .liste-pieces span { font-size: 24px; }
+}
 @media (prefers-reduced-motion: reduce) { button:active { transform: none; } }
 </style>
-
+<style>body{margin:0}[hidden]{display:none!important}</style>
+</head>
+<body>
 <div class="wrap">
   <header>
     <div class="marque">
@@ -125,6 +195,8 @@ footer { color: var(--muted); font-size: 18px; text-align: center; }
   <section class="etape" aria-labelledby="t1">
     <h2 id="t1">1 · Choisis ton jeu <i>— 5 jeux</i></h2>
     <div class="jeux" id="jeux"></div>
+    <div class="points" id="points" aria-hidden="true"></div>
+    <p class="glisse">◀ Fais glisser pour changer de jeu ▶</p>
   </section>
 
   <section class="etape" aria-labelledby="t2">
@@ -232,7 +304,21 @@ footer { color: var(--muted); font-size: 18px; text-align: center; }
       `<rect x="${x * s}" y="${y * s}" width="${s - 1}" height="${s - 1}" fill="${c}"/><rect x="${x * s}" y="${y * s}" width="${s - 1}" height="2" fill="rgba(255,255,255,.45)"/>`).join("")}</svg>`;
   };
 
+  const mobile = () => matchMedia("(max-width: 700px)").matches;
+  const doux = () => matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+  function centrerJeu() {
+    const c = $("jeux"), b = c.children[jeu]; if (!b || !mobile()) return;
+    c.scrollTo({ left: b.offsetLeft - (c.clientWidth - b.clientWidth) / 2, behavior: doux() });
+  }
   function rendJeux() {
+    if ($("jeux").children.length) {          // déjà construites : on met juste à jour l'état
+      [...$("jeux").children].forEach((b, i) => {
+        b.setAttribute("aria-pressed", i === jeu);
+        b.querySelector(".etoiles").textContent = [0, 1, 2].map(n => etoiles[JEUX[i].id + n] ? "★" : "☆").join("");
+      });
+      $("points").innerHTML = JEUX.map((j, i) => `<span style="--c:${j.c}" class="${i === jeu ? "on" : ""}"></span>`).join("");
+      return;
+    }
     $("jeux").innerHTML = JEUX.map((j, i) => {
       const e = [0, 1, 2].map(n => etoiles[j.id + n] ? "★" : "☆").join("");
       return `<button class="cartouche" style="--c:${j.c}" aria-pressed="${i === jeu}" data-i="${i}">
@@ -241,10 +327,23 @@ footer { color: var(--muted); font-size: 18px; text-align: center; }
         <span class="but">${j.but}</span><span class="etoiles" aria-label="Niveaux réussis">${e}</span></button>`;
     }).join("");
     $("jeux").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { jeu = +b.dataset.i; bip(660); maj(true); }));
+    // sur mobile : la carte arrêtée au centre du carrousel devient le jeu choisi
+    let attente = null;
+    $("jeux").addEventListener("scroll", () => {
+      if (!mobile()) return;
+      clearTimeout(attente);
+      attente = setTimeout(() => {
+        const c = $("jeux"), milieu = c.scrollLeft + c.clientWidth / 2;
+        let best = 0, d = 1e9;
+        [...c.children].forEach((b, i) => { const m = Math.abs(b.offsetLeft + b.clientWidth / 2 - milieu); if (m < d) { d = m; best = i; } });
+        if (best !== jeu) { jeu = best; bip(660); rendJeux(); rendNiveaux(); rendMission(false); rendGalerie(); }
+      }, 140);
+    }, { passive: true });
+    rendJeux();
   }
   function rendNiveaux() {
     $("niveaux").innerHTML = LIB_NIV.map((l, n) =>
-      `<button aria-pressed="${n === niv}" data-n="${n}"><span class="st">${"★".repeat(n + 1)}${"☆".repeat(2 - n)}</span><span class="lib">${l}</span></button>`).join("");
+      `<button aria-pressed="${n === niv}" data-n="${n}"><span class="st">${"★".repeat(n + 1)}${"☆".repeat(2 - n)}</span><span class="lib">${l}</span><span class="desc">${["Pour découvrir", "Un peu plus de défi", "Pour les champions"][n]}</span></button>`).join("");
     $("niveaux").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { niv = +b.dataset.n; bip(880); maj(true); }));
   }
   function rendMission(defile) {
@@ -281,9 +380,14 @@ footer { color: var(--muted); font-size: 18px; text-align: center; }
   const NOMS = { I: "I", O: "O", T: "T", D: "T doré", S: "S", Z: "Z", J: "J", L: "L" };
   const rot = (c, k) => { let r = c.map(p => p.slice()); for (let i = 0; i < k; i++) r = r.map(([x, z]) => [-z, x]); return r; };
   let filtre = 0, imageChoisie = 0;
-  function svgImage(im, silhouette, grand) {
+  function svgImage(im, silhouette, grand, recadre) {
     const S = 10, ox = Math.floor((10 - im.w) / 2), oy = 20 - im.h;
-    let out = `<svg viewBox="-1 -1 ${10 * S + 2} ${20 * S + 2}" role="img" aria-label="${im.nom}${silhouette ? ", silhouette" : ""}">`;
+    let vb = `-1 -1 ${10 * S + 2} ${20 * S + 2}`;
+    if (recadre) {                         // vignette : le dessin et une case de marge autour
+      const x0 = Math.max(0, ox - 1), y0 = Math.max(0, oy - 1), x1 = Math.min(10, ox + im.w + 1), y1 = Math.min(20, oy + im.h + 1);
+      vb = `${x0 * S - 1} ${y0 * S - 1} ${(x1 - x0) * S + 2} ${(y1 - y0) * S + 2}`;
+    }
+    let out = `<svg viewBox="${vb}" role="img" aria-label="${im.nom}${silhouette ? ", silhouette" : ""}">`;
     out += `<rect x="0" y="0" width="${10 * S}" height="${20 * S}" fill="#F3F3F0"/>`;
     for (let i = 1; i < 10; i++) out += `<line x1="${i * S}" y1="0" x2="${i * S}" y2="${20 * S}" stroke="#C9CCD1" stroke-width="0.6"/>`;
     for (let j = 1; j < 20; j++) out += `<line x1="0" y1="${j * S}" x2="${10 * S}" y2="${j * S}" stroke="#C9CCD1" stroke-width="0.6"/>`;
@@ -309,17 +413,18 @@ footer { color: var(--muted); font-size: 18px; text-align: center; }
     if (bloc.hidden) return;
     const sil = niv === 1;                 // niveau ★★ du jeu 5 : silhouette seulement
     $("filtres").innerHTML = `<span>Difficulté :</span>` + [0, 1, 2, 3, 4, 5].map(n =>
-      `<button aria-pressed="${n === filtre}" data-f="${n}">${n === 0 ? "Toutes" : blocsNiveau(n)}</button>`).join("");
+      `<button aria-pressed="${n === filtre}" data-f="${n}"><span class="fn">${n === 0 ? "Toutes" : "Niveau " + n}</span><span class="fb">${n === 0 ? IMAGES.length : blocsNiveau(n)}</span></button>`).join("");
     $("filtres").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { filtre = +b.dataset.f; bip(700); rendGalerie(); }));
     const liste = IMAGES.map((im, i) => ({ im, i })).filter(o => !filtre || o.im.niveau === filtre);
     if (!liste.some(o => o.i === imageChoisie)) imageChoisie = liste[0].i;
     $("galerie").innerHTML = liste.map(({ im, i }) =>
-      `<button class="carte" aria-pressed="${i === imageChoisie}" data-i="${i}">${svgImage(im, sil, false)}<span>${im.nom}</span><span class="niv5" aria-label="difficulté ${im.niveau} sur 5">${blocsNiveau(im.niveau)}</span></button>`).join("");
+      `<button class="carte" aria-pressed="${i === imageChoisie}" data-i="${i}">${svgImage(im, sil, false, true)}<span>${im.nom}</span><span class="niv5" aria-label="difficulté ${im.niveau} sur 5">${blocsNiveau(im.niveau)}</span></button>`).join("");
     $("galerie").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { imageChoisie = +b.dataset.i; bip(820); rendGalerie();
       $("zoom").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" }); }));
     const im = IMAGES[imageChoisie], compte = {};
     im.pieces.forEach(([t]) => compte[t] = (compte[t] || 0) + 1);
-    $("zoom").innerHTML = `${svgImage(im, sil, true)}
+    $("zoom").innerHTML = `<div class="vues"><div class="vue-grande">${svgImage(im, sil, true, true)}</div>
+        <figure class="vue-plateau">${svgImage(im, sil, false)}<figcaption>Sur le plateau</figcaption></figure></div>
       <div class="info">
         <h3>${im.nom}</h3>
         <div class="niv5" style="color:var(--gold)">Difficulté ${blocsNiveau(im.niveau)} · ${im.pieces.length} pièces · ${im.pieces.length * 4} cases</div>
@@ -329,7 +434,7 @@ footer { color: var(--muted); font-size: 18px; text-align: center; }
       </div>`;
   }
 
-  function maj(defile) { rendJeux(); rendNiveaux(); rendMission(defile); rendGalerie(); }
+  function maj(defile) { rendJeux(); rendNiveaux(); rendMission(defile); rendGalerie(); centrerJeu(); }
 
   // ---------------- son : musique chiptune (WebAudio, jouée à la demande) ----------------
   let ctx = null, maitre = null, joue = false, muet = false, prochain = 0, pas = 0, minuteur = null;
@@ -472,3 +577,5 @@ footer { color: var(--muted); font-size: 18px; text-align: center; }
   maj(false);
 })();
 </script>
+</body>
+</html>
