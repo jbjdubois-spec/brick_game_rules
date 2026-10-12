@@ -1,0 +1,474 @@
+<title>Tetris by Retro Nono</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+<style>
+/* Mise en page : écran de borne d'arcade — en-tête (logo, titre, son), bandeau animé, puis 3 étapes : jeu, niveau, mission */
+:root {
+  --bg: #120E24; --bg2: #1A1433; --panel: #221B40; --line: #3D3370; --ink: #F4F0FF; --muted: #B3ABD6;
+  --gold: #FFD23F; --pink: #FF5EA8; --cyan: #3CC8F0; --ok: #7CE07C;
+  --pixel: "Press Start 2P", "Courier New", monospace;
+  --body: "VT323", "Courier New", monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--bg); }
+body { color: var(--ink); font-family: var(--body); font-size: 22px; line-height: 1.2;
+  background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 3px); }
+.wrap { max-width: 1040px; margin: 0 auto; padding-inline: 16px; padding-block: 16px 40px; display: grid; gap: 18px; }
+
+header { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 20px; justify-content: space-between; }
+.marque { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; min-width: 0; }
+.logo { position: relative; padding: 10px 14px 12px; border: 3px dashed var(--line); border-radius: 6px; display: grid; gap: 4px; justify-items: center; }
+.logo .mot { font-family: var(--pixel); font-size: clamp(16px, 3.4vw, 24px); line-height: 1; letter-spacing: 2px; transform: skewX(-8deg);
+  color: var(--gold); text-shadow: 3px 3px 0 #C2410C, 6px 6px 0 #4A1D0C; -webkit-text-stroke: 1px #4A1D0C; }
+.logo .mot b { color: var(--pink); text-shadow: 3px 3px 0 #9D174D, 6px 6px 0 #3B0A1F; font-weight: 400; }
+.logo .prov { font-size: 15px; color: var(--muted); }
+h1 { margin: 0; font-family: var(--pixel); font-weight: 400; font-size: clamp(15px, 2.6vw, 20px); line-height: 1.5; text-wrap: balance; }
+h1 span { color: var(--cyan); }
+.son { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.son label { color: var(--muted); font-size: 18px; display: flex; align-items: center; gap: 6px; }
+input[type=range] { accent-color: var(--gold); width: 110px; }
+
+button { font-family: var(--pixel); font-size: 11px; line-height: 1.4; color: var(--ink); background: var(--panel); border: 0; cursor: pointer;
+  padding: 12px 14px; min-height: 44px; border-radius: 0;
+  box-shadow: 0 -4px 0 0 var(--line), 0 4px 0 0 var(--line), -4px 0 0 0 var(--line), 4px 0 0 0 var(--line); margin: 4px; }
+button:hover { background: #2E2558; }
+button:active { transform: translateY(2px); }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--gold); outline-offset: 6px; }
+button.jaune { background: var(--gold); color: #2A1B00; box-shadow: 0 -4px 0 0 #B8860B, 0 4px 0 0 #8A5E00, -4px 0 0 0 #B8860B, 4px 0 0 0 #8A5E00; }
+button.jaune:hover { background: #FFE07A; }
+
+.ecran { position: relative; border: 4px solid var(--line); background: #0B0918; }
+.ecran canvas { display: block; width: 100%; height: auto; image-rendering: pixelated; image-rendering: crisp-edges; cursor: pointer; }
+.ecran .astuce { position: absolute; right: 8px; bottom: 6px; font-size: 16px; color: #E8E2FF; background: rgba(11,9,24,0.7); padding: 0 6px; pointer-events: none; }
+
+.etape { display: grid; gap: 12px; }
+.etape h2 { margin: 0; font-family: var(--pixel); font-weight: 400; font-size: clamp(12px, 2vw, 15px); color: var(--gold); line-height: 1.6; }
+.etape h2 i { font-style: normal; color: var(--muted); }
+
+.jeux { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
+.cartouche { text-align: left; display: grid; gap: 10px; align-content: start; padding: 14px; font-family: var(--body); font-size: 20px; min-height: 150px; }
+.cartouche .tete { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.cartouche .nom { font-family: var(--pixel); font-size: 11px; line-height: 1.5; }
+.cartouche .but { color: var(--muted); font-size: 19px; line-height: 1.1; }
+.cartouche .etoiles { font-size: 18px; color: var(--gold); letter-spacing: 1px; }
+.cartouche[aria-pressed="true"] { background: #2E2558; box-shadow: 0 -4px 0 0 var(--c), 0 4px 0 0 var(--c), -4px 0 0 0 var(--c), 4px 0 0 0 var(--c); }
+.cartouche .bande { height: 6px; background: var(--c); }
+
+.niveaux { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.niveaux button { display: grid; gap: 6px; justify-items: center; padding: 14px 8px; }
+.niveaux .st { font-size: 18px; color: var(--gold); letter-spacing: 2px; }
+.niveaux .lib { font-family: var(--body); font-size: 22px; }
+.niveaux button[aria-pressed="true"] { background: var(--gold); color: #2A1B00; }
+.niveaux button[aria-pressed="true"] .st { color: #2A1B00; }
+
+.mission { background: var(--panel); border: 4px solid var(--c, var(--line)); padding: 18px; display: grid; gap: 14px; }
+.mission .titre { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; justify-content: space-between; }
+.mission h3 { margin: 0; font-family: var(--pixel); font-weight: 400; font-size: clamp(13px, 2.4vw, 17px); line-height: 1.5; text-wrap: balance; }
+.mission .niv { color: var(--gold); font-size: 22px; }
+.mission .objectif { font-size: 26px; line-height: 1.15; color: #FFFFFF; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.bloc { display: grid; gap: 6px; align-content: start; min-width: 0; }
+.bloc h4 { margin: 0; font-family: var(--pixel); font-weight: 400; font-size: 10px; color: var(--cyan); letter-spacing: 1px; line-height: 1.6; }
+.bloc ol, .bloc ul { margin: 0; padding-left: 1.3em; display: grid; gap: 4px; }
+.bloc p { margin: 0; }
+.adulte { border-top: 2px dashed var(--line); padding-top: 10px; color: var(--muted); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.bravo { font-family: var(--pixel); font-size: 12px; color: var(--ok); min-height: 1.5em; }
+
+.galerie-filtres { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.galerie-filtres span { color: var(--muted); font-size: 20px; margin-right: 6px; }
+.galerie-filtres button[aria-pressed="true"] { background: var(--gold); color: #2A1B00; }
+.galerie { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 14px; }
+.carte { display: grid; gap: 6px; padding: 8px; font-family: var(--body); font-size: 18px; text-align: center; justify-items: center; }
+.carte svg { width: 100%; height: auto; display: block; background: #FFFFFF; }
+.carte .niv5 { color: var(--gold); font-size: 16px; letter-spacing: 1px; }
+.carte[aria-pressed="true"] { background: #2E2558; box-shadow: 0 -4px 0 0 var(--gold), 0 4px 0 0 var(--gold), -4px 0 0 0 var(--gold), 4px 0 0 0 var(--gold); }
+.zoom { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 20px; align-items: start; background: var(--panel); border: 4px solid #7AB536; padding: 16px; }
+.zoom svg { width: 100%; height: auto; display: block; background: #FFFFFF; }
+.zoom h3 { margin: 0; font-family: var(--pixel); font-weight: 400; font-size: clamp(13px, 2.4vw, 16px); line-height: 1.5; }
+.zoom .info { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.liste-pieces { display: flex; flex-wrap: wrap; gap: 8px 14px; }
+.liste-pieces span { display: inline-flex; align-items: center; gap: 6px; font-size: 21px; }
+@media (max-width: 600px) { .zoom { grid-template-columns: 1fr; } .zoom svg { max-width: 260px; margin: 0 auto; } }
+footer { color: var(--muted); font-size: 18px; text-align: center; }
+@media (max-width: 520px) {
+  body { font-size: 20px; }
+  .niveaux { gap: 10px; }
+  .niveaux .lib { font-size: 19px; }
+  .cartouche { min-height: 0; }
+}
+@media (prefers-reduced-motion: reduce) { button:active { transform: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="marque">
+      <div class="logo" aria-label="Emplacement du logo Retro Nono">
+        <div class="mot">RETRO <b>NONO</b></div>
+        <div class="prov">logo provisoire</div>
+      </div>
+      <h1>TETRIS <span>by</span> Retro Nono</h1>
+    </div>
+    <div class="son" role="group" aria-label="Musique">
+      <button id="musique" class="jaune" aria-pressed="false">♪ Lancer la musique</button>
+      <button id="muet" aria-pressed="false">Couper le son</button>
+      <label for="volume">Volume <input id="volume" type="range" min="0" max="100" value="45"></label>
+    </div>
+  </header>
+
+  <div class="ecran">
+    <canvas id="bandeau" width="320" height="96" aria-label="Animation : un petit T doré court et saute par-dessus les pièces qui tombent"></canvas>
+    <div class="astuce">clic = saut !</div>
+  </div>
+
+  <section class="etape" aria-labelledby="t1">
+    <h2 id="t1">1 · Choisis ton jeu <i>— 5 jeux</i></h2>
+    <div class="jeux" id="jeux"></div>
+  </section>
+
+  <section class="etape" aria-labelledby="t2">
+    <h2 id="t2">2 · Choisis ton niveau</h2>
+    <div class="niveaux" id="niveaux"></div>
+  </section>
+
+  <section class="etape" aria-labelledby="t3">
+    <h2 id="t3">3 · Ta mission</h2>
+    <article class="mission" id="mission" aria-live="polite"></article>
+  </section>
+
+  <section class="etape" aria-labelledby="t4" id="bloc-galerie" hidden>
+    <h2 id="t4">4 · Les cartes images <i>— à reproduire sur le plateau</i></h2>
+    <div class="galerie-filtres" id="filtres" role="group" aria-label="Difficulté des images"></div>
+    <div class="zoom" id="zoom"></div>
+    <div class="galerie" id="galerie"></div>
+  </section>
+
+  <footer>Jeu imprimé en 3D pour l'École des Bois · 50 pièces · plateau de 10 × 20 cases</footer>
+</div>
+
+<script>
+(function () {
+  // ---------------- contenu des jeux ----------------
+  const JEUX = [
+    { id: "puzzle", nom: "Le grand puzzle", c: "#3CC8F0", piece: [[0,0],[1,0],[2,0],[3,0]], but: "Remplir une zone sans laisser de trou.",
+      apprend: "se repérer, tourner une forme dans sa tête, persévérer.",
+      niveaux: [
+        { objectif: "Remplis un carré de 4 × 4 cases avec les pièces O et I.", pieces: "4 O et 4 I",
+          etapes: ["Repère le carré de 4 × 4 cases dans un coin du plateau.", "Pose les pièces une par une à l'intérieur.", "Tourne les I s'ils ne rentrent pas."],
+          reussi: "Les 16 cases du carré sont couvertes, aucune pièce ne dépasse.", adulte: "Montrez le carré du doigt ou entourez-le avec 4 pièces d'une autre couleur." },
+        { objectif: "Remplis la moitié du plateau (10 × 10 cases) avec des pièces tirées au hasard.", pieces: "25 pièces dans un sac",
+          etapes: ["Tire une pièce dans le sac sans regarder.", "Trouve-lui une place dans la moitié du haut.", "Continue jusqu'à ce que la moitié soit pleine."],
+          reussi: "La moitié du plateau est couverte. Un ou deux trous, c'est déjà très bien !", adulte: "S'il reste un trou impossible, proposez d'échanger une pièce contre une autre." },
+        { objectif: "Remplis tout le plateau avec les 49 pièces de couleur, en gardant un trou en forme de T. Le T doré se pose en dernier !", pieces: "les 50 pièces",
+          etapes: ["Garde le T doré de côté.", "Commence par les bords, les pièces I et O d'abord.", "Garde un trou en forme de T pour la fin.", "Pose le T doré dans le dernier trou."],
+          reussi: "Les 200 cases sont couvertes, le T doré est posé.", adulte: "C'est possible : il existe plusieurs solutions. Le défi peut se faire en plusieurs séances." },
+      ] },
+    { id: "copie", nom: "Copie-moi", c: "#F7D51D", piece: [[0,0],[1,0],[0,1],[1,1]], but: "Refaire un modèle à l'identique.",
+      apprend: "la mémoire, les mots de l'espace (en haut, à côté, tourner).",
+      niveaux: [
+        { objectif: "Recopie un modèle de 3 pièces. Le modèle reste visible.", pieces: "2 jeux de 3 pièces identiques",
+          etapes: ["L'adulte construit le modèle en haut du plateau.", "Reconstruis le même en bas.", "Comparez les deux ensemble."],
+          reussi: "Les deux constructions sont pareilles : mêmes pièces, même sens.", adulte: "Commencez avec des pièces de couleurs différentes, c'est plus facile à repérer." },
+        { objectif: "Regarde le modèle de 5 pièces pendant 10 secondes, puis il est caché. Refais-le de mémoire.", pieces: "2 jeux de 5 pièces identiques",
+          etapes: ["Regarde bien le modèle : compte jusqu'à 10.", "L'adulte cache le modèle avec une feuille.", "Reconstruis-le, puis on soulève la feuille pour vérifier."],
+          reussi: "Au moins 4 pièces sur 5 sont au bon endroit, dans le bon sens.", adulte: "Si c'est trop dur, laissez regarder une deuxième fois 5 secondes." },
+        { objectif: "Pas de modèle à voir : écoute les consignes et pose les pièces.", pieces: "5 à 8 pièces",
+          etapes: ["L'adulte dit une consigne : « le T violet en haut à gauche, la pointe vers le bas ».", "Pose la pièce exactement comme dit.", "Ensuite, c'est toi qui donnes les consignes !"],
+          reussi: "Le plateau correspond au modèle caché de l'adulte.", adulte: "Idéal en orthophonie : travaillez haut / bas, gauche / droite, à côté de, au-dessus de." },
+      ] },
+    { id: "pioche", nom: "La pioche mystère", c: "#B04BB2", piece: [[0,0],[1,0],[2,0],[1,1]], but: "Reconnaître une pièce au toucher.",
+      apprend: "le toucher, nommer, décrire avec des phrases.",
+      niveaux: [
+        { objectif: "Pioche une pièce dans le sac, dis son nom ou sa couleur, puis pose-la où tu veux.", pieces: "toutes les pièces dans un sac en tissu",
+          etapes: ["Mets la main dans le sac.", "Sors une pièce et dis son nom : I, O, T, S, Z, L ou J.", "Pose-la sur le plateau."],
+          reussi: "Tu as nommé 5 pièces de suite.", adulte: "Acceptez la couleur ou une description (« le bâton ») au début." },
+        { objectif: "Devine la pièce au toucher AVANT de la sortir. Elle doit toucher une pièce déjà posée.", pieces: "toutes les pièces dans un sac",
+          etapes: ["Touche la pièce dans le sac sans regarder.", "Dis quelle pièce c'est.", "Sors-la : as-tu deviné juste ?", "Pose-la contre une pièce déjà posée."],
+          reussi: "3 bonnes devinettes sur 5.", adulte: "Commencez avec seulement 3 formes très différentes dans le sac : I, O, T." },
+        { objectif: "Décris la pièce sans dire son nom : les autres doivent deviner laquelle c'est.", pieces: "toutes les pièces, 2 joueurs ou plus",
+          etapes: ["Pioche une pièce en cachette.", "Décris-la : « trois carrés en ligne et un en dessous, au milieu ».", "Le premier qui trouve pose la pièce sur le plateau."],
+          reussi: "Les autres ont trouvé ta pièce grâce à ta description.", adulte: "Aidez avec des mots-outils : en ligne, en escalier, au milieu, au bout." },
+      ] },
+    { id: "lignes", nom: "Les lignes à deux", c: "#E5412B", piece: [[1,0],[2,0],[0,1],[1,1]], but: "Compléter des lignes, chacun son tour.",
+      apprend: "attendre son tour, prévoir, jouer ensemble.",
+      niveaux: [
+        { objectif: "Chacun son tour, choisissez une pièce et remplissez le plateau en partant du bas.", pieces: "toutes les pièces, 2 joueurs",
+          etapes: ["Les pièces se posent en bas, ou sur d'autres pièces (comme si elles tombaient).", "Chacun choisit sa pièce et la pose.", "Une ligne de 10 cases complète = une étoile pour l'équipe."],
+          reussi: "L'équipe a gagné 3 étoiles.", adulte: "Penchez le plateau : on voit bien le « bas », comme sur l'écran." },
+        { objectif: "Même jeu, mais la pièce est tirée au hasard dans le sac.", pieces: "toutes les pièces dans un sac, 2 joueurs",
+          etapes: ["Tire une pièce sans regarder.", "Trouve la meilleure place pour elle.", "Ton coéquipier peut te donner un conseil."],
+          reussi: "L'équipe a complété 5 lignes.", adulte: "Laissez les enfants discuter de la meilleure place avant de poser." },
+        { objectif: "Avant de poser, annonce où tu vas mettre ta pièce et pourquoi. Objectif : 10 lignes à deux.", pieces: "toutes les pièces dans un sac, 2 joueurs",
+          etapes: ["Tire une pièce.", "Dis où tu vas la poser : « je la mets en bas à droite pour finir la ligne ».", "Pose-la. Ton coéquipier vérifie."],
+          reussi: "10 lignes complètes : la moitié du plateau !", adulte: "Valorisez les explications autant que le résultat." },
+      ] },
+    { id: "images", nom: "Les images", c: "#7AB536", piece: [[0,0],[1,0],[1,1],[2,1]], but: "Construire une image avec les pièces.",
+      apprend: "inventer, observer une forme, raconter.",
+      niveaux: [
+        { objectif: "Construis l'image de la carte modèle : toutes les pièces sont dessinées dessus.", pieces: "selon la carte",
+          etapes: ["Choisis une carte : maison, sapin, fusée ou bonhomme.", "Trouve les pièces de la carte.", "Pose-les pareil sur le plateau."],
+          reussi: "Ton image ressemble à la carte.", adulte: "Une carte à la taille réelle du plateau aide beaucoup au début." },
+        { objectif: "Sur la carte, on voit seulement la silhouette de l'image : à toi de trouver les pièces.", pieces: "selon la silhouette",
+          etapes: ["Regarde la forme de la silhouette.", "Essaie des pièces pour la remplir.", "Tourne-les jusqu'à ce que ça rentre."],
+          reussi: "La silhouette est entièrement remplie.", adulte: "Plusieurs solutions sont possibles : comparez-les." },
+        { objectif: "Invente ton image, puis fais-la deviner aux autres.", pieces: "toutes les pièces",
+          etapes: ["Imagine ce que tu veux construire.", "Construis-le sur le plateau.", "Les autres devinent, puis tu racontes ton image."],
+          reussi: "Les autres ont deviné, ou tu as raconté ton image.", adulte: "Prenez une photo : on peut en faire de nouvelles cartes modèles." },
+      ] },
+  ];
+  const LIB_NIV = ["Facile", "Moyen", "Difficile"];
+
+  // ---------------- mémoire locale (étoiles gagnées) ----------------
+  let etoiles = {};
+  try { etoiles = JSON.parse(localStorage.getItem("retronono-etoiles") || "{}"); } catch (e) { etoiles = {}; }
+  const sauve = () => { try { localStorage.setItem("retronono-etoiles", JSON.stringify(etoiles)); } catch (e) {} };
+
+  let jeu = 0, niv = 0;
+  const $ = id => document.getElementById(id);
+  const icone = (cells, c, s) => {
+    const w = Math.max(...cells.map(p => p[0])) + 1, h = Math.max(...cells.map(p => p[1])) + 1;
+    return `<svg width="${w * s}" height="${h * s}" viewBox="0 0 ${w * s} ${h * s}" aria-hidden="true">${cells.map(([x, y]) =>
+      `<rect x="${x * s}" y="${y * s}" width="${s - 1}" height="${s - 1}" fill="${c}"/><rect x="${x * s}" y="${y * s}" width="${s - 1}" height="2" fill="rgba(255,255,255,.45)"/>`).join("")}</svg>`;
+  };
+
+  function rendJeux() {
+    $("jeux").innerHTML = JEUX.map((j, i) => {
+      const e = [0, 1, 2].map(n => etoiles[j.id + n] ? "★" : "☆").join("");
+      return `<button class="cartouche" style="--c:${j.c}" aria-pressed="${i === jeu}" data-i="${i}">
+        <span class="bande" aria-hidden="true"></span>
+        <span class="tete"><span class="nom">${i + 1}. ${j.nom}</span>${icone(j.piece, j.c, 9)}</span>
+        <span class="but">${j.but}</span><span class="etoiles" aria-label="Niveaux réussis">${e}</span></button>`;
+    }).join("");
+    $("jeux").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { jeu = +b.dataset.i; bip(660); maj(true); }));
+  }
+  function rendNiveaux() {
+    $("niveaux").innerHTML = LIB_NIV.map((l, n) =>
+      `<button aria-pressed="${n === niv}" data-n="${n}"><span class="st">${"★".repeat(n + 1)}${"☆".repeat(2 - n)}</span><span class="lib">${l}</span></button>`).join("");
+    $("niveaux").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { niv = +b.dataset.n; bip(880); maj(true); }));
+  }
+  function rendMission(defile) {
+    const j = JEUX[jeu], m = j.niveaux[niv], deja = etoiles[j.id + niv];
+    const el = $("mission"); el.style.setProperty("--c", j.c);
+    el.innerHTML = `
+      <div class="titre"><h3>${j.nom}</h3><span class="niv">${"★".repeat(niv + 1)}${"☆".repeat(2 - niv)} ${LIB_NIV[niv]}</span></div>
+      <p class="objectif" style="margin:0">${m.objectif}</p>
+      <div class="cols">
+        <div class="bloc"><h4>COMMENT JOUER</h4><ol>${m.etapes.map(e => `<li>${e}</li>`).join("")}</ol></div>
+        <div class="bloc"><h4>C'EST RÉUSSI QUAND</h4><p>${m.reussi}</p><h4 style="margin-top:8px">PIÈCES</h4><p>${m.pieces}</p></div>
+      </div>
+      <div class="bloc adulte"><h4>POUR L'ADULTE</h4><p>${m.adulte} On apprend : ${j.apprend}</p></div>
+      <div class="actions">
+        <button class="jaune" id="reussi">${deja ? "★ Encore réussi !" : "★ Défi réussi !"}</button>
+        <button id="hasard">Mission au hasard</button>
+        <button id="suivant">${niv < 2 ? "Niveau suivant" : "Jeu suivant"}</button>
+        <span class="bravo" id="bravo">${deja ? "Déjà réussi : bravo !" : ""}</span>
+      </div>`;
+    $("reussi").addEventListener("click", () => {
+      etoiles[j.id + niv] = true; sauve(); fanfare(); rendJeux();
+      $("bravo").textContent = "BRAVO ! +1 étoile"; hero.saut(true);
+    });
+    $("hasard").addEventListener("click", () => { jeu = Math.floor(Math.random() * 5); niv = Math.floor(Math.random() * 3); bip(520); maj(true); });
+    $("suivant").addEventListener("click", () => { if (niv < 2) niv++; else { niv = 0; jeu = (jeu + 1) % 5; } bip(740); maj(true); });
+    if (defile) el.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" });
+  }
+
+  // ---------------- cartes images du jeu 5 ----------------
+  const IMAGES = [{"nom": "L'escalier", "niveau": 1, "w": 6, "h": 3, "pieces": [["O", 0, 0, 0], ["L", 0, 1, 0], ["J", 3, 1, 0]]}, {"nom": "Le bateau", "niveau": 1, "w": 6, "h": 3, "pieces": [["O", 2, 0, 0], ["Z", 0, 1, 0], ["S", 3, 1, 0]]}, {"nom": "Le carré", "niveau": 1, "w": 4, "h": 4, "pieces": [["O", 0, 0, 0], ["J", 1, 2, 3], ["I", 3, 0, 1], ["J", 0, 2, 0]]}, {"nom": "Le champignon", "niveau": 1, "w": 6, "h": 5, "pieces": [["I", 1, 0, 0], ["J", 2, 2, 2], ["L", 5, 2, 2], ["O", 2, 3, 0]]}, {"nom": "Le petit sapin", "niveau": 1, "w": 6, "h": 5, "pieces": [["O", 2, 0, 0], ["T", 2, 2, 2], ["T", 5, 2, 2], ["O", 2, 3, 0]]}, {"nom": "Le pont", "niveau": 1, "w": 8, "h": 3, "pieces": [["I", 0, 0, 0], ["I", 4, 0, 0], ["O", 0, 1, 0], ["O", 6, 1, 0]]}, {"nom": "La petite pyramide", "niveau": 2, "w": 8, "h": 4, "pieces": [["O", 3, 0, 0], ["T", 3, 2, 2], ["Z", 5, 1, 1], ["T", 7, 3, 2], ["I", 0, 3, 0]]}, {"nom": "La fleur", "niveau": 2, "w": 7, "h": 7, "pieces": [["Z", 1, 0, 0], ["I", 4, 0, 1], ["T", 5, 2, 3], ["Z", 0, 1, 0], ["T", 3, 2, 1], ["T", 2, 5, 0]]}, {"nom": "Le grand T", "niveau": 2, "w": 8, "h": 6, "pieces": [["O", 0, 0, 0], ["J", 2, 0, 0], ["I", 3, 0, 0], ["L", 5, 0, 0], ["I", 3, 2, 1], ["I", 4, 2, 1]]}, {"nom": "La maison", "niveau": 2, "w": 8, "h": 7, "pieces": [["O", 3, 0, 0], ["J", 2, 1, 0], ["T", 5, 3, 3], ["T", 1, 2, 1], ["L", 4, 4, 2], ["S", 5, 3, 0], ["O", 1, 5, 0], ["O", 5, 5, 0]]}, {"nom": "Le cœur", "niveau": 2, "w": 8, "h": 6, "pieces": [["O", 1, 0, 0], ["J", 4, 2, 3], ["S", 7, 0, 1], ["J", 0, 1, 0], ["J", 4, 1, 1], ["L", 4, 2, 0], ["Z", 1, 3, 0], ["S", 3, 4, 0]]}, {"nom": "Le poisson", "niveau": 2, "w": 10, "h": 5, "pieces": [["O", 3, 0, 0], ["J", 4, 2, 3], ["T", 6, 2, 3], ["L", 0, 1, 0], ["T", 9, 1, 1], ["T", 4, 3, 2], ["Z", 7, 2, 1], ["L", 3, 3, 0]]}, {"nom": "La voiture", "niveau": 3, "w": 10, "h": 5, "pieces": [["O", 2, 0, 0], ["J", 3, 2, 3], ["I", 5, 0, 1], ["Z", 1, 1, 1], ["J", 6, 1, 0], ["Z", 2, 2, 1], ["L", 7, 2, 0], ["S", 2, 3, 0], ["J", 6, 3, 0]]}, {"nom": "Le robot", "niveau": 3, "w": 8, "h": 9, "pieces": [["I", 2, 0, 1], ["J", 5, 1, 2], ["O", 3, 2, 0], ["J", 4, 4, 3], ["J", 1, 3, 1], ["L", 6, 5, 3], ["J", 3, 4, 1], ["J", 5, 6, 2], ["L", 0, 7, 0], ["J", 5, 7, 0]]}, {"nom": "La fusée", "niveau": 3, "w": 10, "h": 9, "pieces": [["O", 4, 0, 0], ["J", 3, 1, 0], ["I", 6, 1, 1], ["T", 3, 5, 3], ["L", 4, 5, 3], ["Z", 2, 5, 1], ["T", 5, 6, 2], ["O", 6, 5, 0], ["Z", 8, 6, 1], ["O", 2, 7, 0], ["J", 6, 8, 2]]}, {"nom": "Le château", "niveau": 3, "w": 8, "h": 7, "pieces": [["I", 0, 0, 1], ["L", 3, 0, 1], ["T", 5, 2, 3], ["I", 7, 0, 1], ["L", 2, 1, 1], ["L", 3, 3, 3], ["T", 6, 2, 1], ["T", 4, 4, 2], ["O", 0, 4, 0], ["L", 6, 4, 1], ["T", 7, 4, 1], ["L", 0, 5, 0]]}, {"nom": "Le chat", "niveau": 3, "w": 8, "h": 10, "pieces": [["I", 0, 0, 1], ["Z", 7, 0, 1], ["J", 1, 1, 0], ["O", 4, 2, 0], ["J", 6, 4, 3], ["O", 2, 3, 0], ["Z", 0, 4, 0], ["T", 4, 4, 1], ["T", 5, 6, 3], ["L", 3, 6, 1], ["J", 3, 6, 0], ["T", 2, 9, 2], ["S", 3, 8, 0], ["T", 7, 9, 2]]}, {"nom": "Le dinosaure", "niveau": 3, "w": 10, "h": 10, "pieces": [["O", 5, 0, 0], ["J", 6, 2, 3], ["T", 8, 2, 3], ["S", 6, 2, 1], ["Z", 4, 3, 1], ["I", 7, 3, 1], ["J", 0, 4, 0], ["S", 6, 4, 1], ["T", 8, 6, 3], ["J", 3, 7, 3], ["T", 1, 6, 0], ["S", 6, 6, 1], ["J", 6, 9, 3], ["O", 2, 8, 0]]}, {"nom": "Le grand sapin", "niveau": 4, "w": 10, "h": 11, "pieces": [["O", 4, 0, 0], ["T", 3, 1, 1], ["T", 6, 3, 3], ["J", 3, 4, 3], ["I", 5, 2, 1], ["T", 3, 5, 2], ["Z", 6, 4, 0], ["S", 5, 5, 1], ["S", 7, 5, 1], ["Z", 2, 6, 0], ["S", 0, 7, 0], ["Z", 6, 7, 1], ["T", 9, 8, 2], ["J", 4, 9, 2], ["I", 3, 10, 0]]}, {"nom": "Le bonhomme", "niveau": 4, "w": 10, "h": 11, "pieces": [["O", 3, 0, 0], ["O", 5, 0, 0], ["T", 4, 2, 1], ["J", 5, 2, 0], ["O", 1, 3, 0], ["L", 6, 3, 0], ["T", 0, 6, 3], ["L", 4, 4, 1], ["T", 6, 5, 2], ["T", 9, 4, 1], ["S", 4, 6, 0], ["Z", 3, 7, 1], ["I", 6, 7, 1], ["L", 8, 8, 1], ["L", 1, 9, 0]]}, {"nom": "L'arbre", "niveau": 4, "w": 10, "h": 10, "pieces": [["O", 2, 0, 0], ["J", 4, 0, 0], ["J", 7, 1, 2], ["T", 2, 2, 2], ["L", 6, 1, 0], ["T", 3, 2, 1], ["Z", 4, 2, 0], ["Z", 9, 2, 1], ["Z", 0, 3, 0], ["J", 4, 3, 0], ["J", 6, 5, 3], ["I", 2, 5, 0], ["O", 4, 6, 0], ["L", 2, 8, 0], ["J", 5, 8, 0]]}, {"nom": "Le camion", "niveau": 4, "w": 10, "h": 8, "pieces": [["O", 0, 0, 0], ["J", 2, 0, 0], ["J", 5, 1, 2], ["I", 0, 2, 0], ["L", 4, 4, 3], ["T", 6, 2, 0], ["Z", 9, 2, 1], ["Z", 0, 3, 0], ["T", 2, 3, 0], ["T", 6, 5, 3], ["S", 1, 4, 1], ["T", 5, 5, 2], ["L", 7, 4, 0], ["J", 1, 7, 3], ["O", 7, 6, 0]]}, {"nom": "La tortue", "niveau": 4, "w": 10, "h": 9, "pieces": [["O", 4, 0, 0], ["J", 3, 1, 0], ["T", 6, 3, 3], ["L", 3, 2, 1], ["Z", 1, 3, 1], ["J", 5, 4, 2], ["S", 6, 3, 0], ["Z", 4, 4, 1], ["O", 8, 4, 0], ["O", 1, 5, 0], ["T", 6, 6, 2], ["Z", 6, 5, 0], ["O", 0, 7, 0], ["I", 3, 7, 0], ["O", 8, 7, 0]]}, {"nom": "La pyramide", "niveau": 4, "w": 10, "h": 10, "pieces": [["O", 4, 0, 0], ["J", 3, 2, 0], ["J", 6, 3, 2], ["I", 2, 4, 0], ["L", 6, 6, 3], ["T", 2, 5, 0], ["Z", 5, 5, 1], ["L", 7, 5, 1], ["Z", 1, 6, 0], ["L", 9, 6, 1], ["T", 2, 8, 2], ["J", 5, 7, 0], ["Z", 3, 8, 0], ["I", 0, 9, 0], ["I", 6, 9, 0]]}, {"nom": "L'éléphant", "niveau": 4, "w": 10, "h": 9, "pieces": [["T", 1, 2, 3], ["Z", 2, 0, 0], ["J", 6, 1, 2], ["I", 7, 0, 1], ["S", 6, 1, 1], ["S", 9, 1, 1], ["I", 0, 2, 1], ["J", 4, 3, 2], ["L", 3, 4, 2], ["Z", 5, 3, 1], ["L", 6, 3, 0], ["I", 3, 4, 1], ["J", 5, 5, 0], ["J", 8, 6, 2], ["L", 1, 6, 1], ["J", 3, 8, 3], ["O", 7, 7, 0]]}, {"nom": "La montagne", "niveau": 4, "w": 10, "h": 10, "pieces": [["O", 4, 0, 0], ["J", 3, 1, 0], ["I", 6, 1, 1], ["T", 2, 5, 3], ["L", 3, 5, 3], ["L", 6, 3, 1], ["I", 7, 3, 1], ["S", 2, 5, 1], ["T", 3, 7, 3], ["I", 8, 5, 1], ["Z", 5, 6, 0], ["J", 1, 7, 1], ["S", 3, 7, 0], ["J", 8, 9, 3], ["O", 1, 8, 0], ["L", 3, 8, 0], ["O", 6, 8, 0]]}, {"nom": "Le papillon", "niveau": 4, "w": 10, "h": 10, "pieces": [["O", 0, 0, 0], ["J", 9, 0, 1], ["T", 2, 3, 3], ["L", 8, 1, 1], ["I", 9, 1, 1], ["O", 0, 2, 0], ["Z", 6, 2, 1], ["L", 1, 3, 0], ["J", 3, 5, 3], ["J", 0, 4, 0], ["S", 5, 4, 0], ["T", 9, 5, 2], ["O", 2, 6, 0], ["Z", 6, 6, 0], ["Z", 1, 7, 1], ["S", 7, 7, 1], ["S", 1, 8, 0], ["O", 8, 8, 0]]}, {"nom": "Le hibou", "niveau": 4, "w": 10, "h": 11, "pieces": [["O", 1, 0, 0], ["O", 7, 0, 0], ["I", 0, 1, 1], ["Z", 3, 1, 0], ["L", 5, 3, 3], ["I", 9, 1, 1], ["T", 3, 4, 3], ["S", 6, 3, 1], ["J", 2, 4, 1], ["S", 5, 4, 1], ["J", 6, 6, 3], ["I", 8, 4, 1], ["Z", 2, 5, 0], ["T", 3, 7, 2], ["T", 5, 8, 2], ["T", 5, 7, 0], ["J", 1, 10, 3], ["L", 8, 8, 1]]}, {"nom": "Le phare", "niveau": 4, "w": 10, "h": 14, "pieces": [["O", 4, 0, 0], ["T", 3, 1, 1], ["T", 6, 3, 3], ["L", 4, 5, 3], ["J", 4, 5, 2], ["J", 7, 4, 1], ["S", 4, 5, 1], ["S", 6, 6, 1], ["I", 3, 7, 1], ["Z", 4, 8, 0], ["L", 3, 9, 1], ["I", 4, 9, 1], ["Z", 7, 9, 1], ["I", 5, 10, 1], ["Z", 7, 11, 1], ["T", 2, 13, 2], ["Z", 2, 12, 0], ["T", 9, 13, 2]]}, {"nom": "Le robot géant", "niveau": 4, "w": 10, "h": 15, "pieces": [["I", 3, 0, 0], ["S", 4, 1, 1], ["Z", 6, 1, 1], ["L", 2, 5, 2], ["I", 3, 4, 1], ["O", 4, 4, 0], ["J", 5, 6, 3], ["J", 9, 5, 2], ["L", 1, 7, 3], ["J", 8, 5, 1], ["I", 0, 6, 1], ["T", 4, 8, 3], ["I", 9, 6, 1], ["T", 7, 8, 2], ["O", 2, 8, 0], ["T", 4, 9, 0], ["Z", 7, 9, 1], ["L", 4, 11, 2], ["Z", 3, 11, 1], ["Z", 7, 11, 1], ["L", 1, 13, 0], ["T", 8, 14, 2]]}, {"nom": "La grande fusée", "niveau": 4, "w": 10, "h": 16, "pieces": [["O", 4, 0, 0], ["J", 3, 1, 0], ["T", 6, 3, 3], ["I", 2, 2, 1], ["L", 5, 4, 2], ["Z", 7, 3, 1], ["J", 3, 5, 0], ["T", 7, 5, 1], ["S", 3, 6, 1], ["I", 4, 7, 1], ["L", 5, 9, 3], ["T", 2, 10, 3], ["L", 6, 8, 1], ["I", 7, 8, 1], ["I", 3, 10, 1], ["O", 1, 11, 0], ["L", 6, 12, 2], ["L", 6, 11, 0], ["T", 0, 14, 3], ["T", 6, 13, 2], ["T", 9, 12, 1], ["S", 2, 14, 0], ["Z", 5, 14, 0]]}, {"nom": "Le château fort", "niveau": 4, "w": 10, "h": 12, "pieces": [["I", 0, 0, 1], ["L", 3, 0, 1], ["T", 7, 2, 3], ["J", 8, 2, 3], ["L", 2, 1, 1], ["Z", 4, 2, 1], ["Z", 5, 2, 0], ["J", 5, 3, 0], ["O", 8, 3, 0], ["O", 0, 4, 0], ["T", 2, 6, 3], ["I", 4, 4, 1], ["I", 5, 5, 0], ["L", 7, 5, 0], ["O", 0, 6, 0], ["S", 6, 6, 1], ["T", 2, 7, 1], ["J", 3, 7, 0], ["S", 8, 7, 1], ["L", 8, 9, 3], ["T", 0, 10, 3], ["J", 6, 11, 3], ["S", 0, 10, 0], ["O", 8, 10, 0], ["I", 2, 11, 0]]}, {"nom": "La fusée géante", "niveau": 5, "w": 10, "h": 19, "pieces": [["O", 4, 0, 0], ["J", 3, 1, 0], ["T", 6, 3, 3], ["I", 2, 2, 1], ["L", 5, 4, 2], ["Z", 7, 3, 1], ["J", 3, 5, 0], ["T", 7, 5, 1], ["S", 3, 6, 1], ["I", 4, 7, 1], ["L", 5, 9, 3], ["T", 2, 10, 3], ["L", 6, 8, 1], ["I", 7, 8, 1], ["Z", 3, 10, 1], ["S", 3, 11, 0], ["Z", 6, 11, 1], ["J", 1, 12, 0], ["O", 7, 12, 0], ["T", 0, 15, 3], ["T", 5, 14, 2], ["J", 5, 15, 3], ["T", 9, 13, 1], ["Z", 3, 15, 0], ["Z", 3, 16, 1], ["S", 7, 16, 1]]}, {"nom": "Le grand bonhomme", "niveau": 5, "w": 10, "h": 20, "pieces": [["O", 3, 0, 0], ["J", 4, 2, 3], ["S", 7, 0, 1], ["L", 3, 1, 1], ["I", 4, 3, 0], ["L", 3, 6, 3], ["J", 6, 4, 1], ["J", 3, 6, 1], ["Z", 6, 6, 1], ["J", 6, 8, 3], ["T", 1, 7, 1], ["O", 3, 7, 0], ["S", 9, 7, 1], ["T", 0, 11, 3], ["I", 3, 9, 0], ["S", 9, 9, 1], ["I", 3, 10, 0], ["O", 3, 11, 0], ["O", 5, 11, 0], ["S", 2, 13, 0], ["Z", 5, 13, 0], ["L", 2, 17, 3], ["I", 6, 15, 1], ["I", 7, 15, 1], ["L", 3, 16, 1], ["I", 0, 19, 0], ["I", 6, 19, 0]]}, {"nom": "Le grand arbre", "niveau": 5, "w": 10, "h": 18, "pieces": [["O", 3, 0, 0], ["J", 4, 2, 3], ["I", 6, 0, 1], ["Z", 2, 1, 1], ["T", 7, 3, 3], ["S", 4, 2, 1], ["L", 1, 3, 1], ["T", 2, 3, 1], ["S", 6, 3, 1], ["Z", 8, 3, 1], ["J", 8, 5, 3], ["L", 4, 4, 1], ["Z", 4, 5, 0], ["O", 1, 6, 0], ["S", 6, 6, 0], ["J", 0, 7, 0], ["I", 3, 7, 1], ["I", 4, 7, 1], ["T", 5, 9, 3], ["L", 8, 9, 3], ["O", 7, 8, 0], ["J", 2, 10, 2], ["T", 7, 10, 2], ["L", 4, 13, 3], ["I", 4, 12, 1], ["L", 6, 14, 1], ["S", 2, 16, 0], ["I", 4, 17, 0]]}, {"nom": "Le château de la forêt", "niveau": 5, "w": 10, "h": 13, "pieces": [["I", 0, 0, 1], ["L", 3, 0, 1], ["Z", 4, 0, 0], ["T", 7, 2, 3], ["J", 8, 2, 3], ["I", 1, 1, 1], ["L", 3, 3, 3], ["J", 6, 2, 1], ["S", 3, 3, 1], ["S", 8, 3, 1], ["L", 8, 5, 3], ["T", 0, 6, 3], ["J", 3, 6, 3], ["T", 7, 5, 2], ["Z", 2, 5, 1], ["I", 5, 6, 0], ["L", 7, 6, 0], ["S", 1, 7, 1], ["I", 2, 7, 1], ["O", 7, 8, 0], ["J", 8, 10, 3], ["T", 0, 11, 3], ["O", 3, 10, 0], ["O", 5, 10, 0], ["J", 6, 12, 3], ["S", 0, 11, 0], ["O", 8, 11, 0], ["I", 2, 12, 0]]}, {"nom": "L'escalier géant", "niveau": 5, "w": 10, "h": 20, "pieces": [["O", 0, 0, 0], ["J", 1, 2, 1], ["T", 1, 5, 3], ["Z", 3, 4, 1], ["I", 0, 5, 1], ["S", 2, 6, 1], ["L", 4, 6, 1], ["S", 2, 8, 1], ["I", 5, 8, 1], ["T", 0, 11, 3], ["J", 2, 11, 3], ["I", 4, 9, 1], ["Z", 1, 11, 1], ["O", 2, 12, 0], ["J", 7, 13, 2], ["L", 2, 13, 1], ["T", 4, 15, 3], ["L", 5, 15, 3], ["L", 1, 14, 1], ["L", 2, 16, 3], ["J", 6, 16, 3], ["Z", 5, 15, 1], ["S", 3, 16, 1], ["O", 8, 16, 0], ["O", 0, 17, 0], ["T", 5, 17, 0], ["L", 0, 18, 0], ["S", 3, 18, 0], ["J", 9, 19, 2], ["I", 5, 19, 0]]}, {"nom": "Le plateau complet", "niveau": 5, "w": 10, "h": 20, "pieces": [["O", 0, 0, 0], ["T", 2, 0, 0], ["O", 5, 0, 0], ["L", 9, 1, 2], ["T", 2, 1, 1], ["S", 5, 1, 1], ["J", 7, 3, 3], ["I", 9, 1, 1], ["I", 0, 2, 1], ["T", 3, 4, 3], ["J", 7, 2, 1], ["T", 1, 5, 3], ["Z", 4, 4, 1], ["S", 6, 4, 1], ["L", 8, 4, 1], ["S", 9, 4, 1], ["I", 2, 5, 1], ["J", 1, 6, 1], ["Z", 4, 6, 1], ["L", 6, 6, 1], ["L", 2, 7, 1], ["Z", 6, 7, 0], ["L", 8, 9, 3], ["J", 4, 8, 0], ["S", 1, 9, 1], ["I", 3, 9, 1], ["Z", 7, 9, 0], ["J", 1, 12, 3], ["S", 5, 10, 1], ["T", 5, 10, 0], ["I", 0, 11, 1], ["O", 7, 11, 0], ["I", 9, 11, 1], ["L", 2, 12, 0], ["T", 7, 13, 2], ["I", 1, 13, 1], ["Z", 8, 13, 1], ["O", 2, 14, 0], ["O", 4, 14, 0], ["J", 5, 16, 3], ["L", 1, 15, 1], ["S", 7, 15, 0], ["S", 3, 16, 1], ["Z", 3, 16, 0], ["T", 9, 16, 1], ["O", 6, 17, 0], ["O", 0, 18, 0], ["J", 2, 18, 0], ["Z", 4, 18, 0], ["D", 9, 19, 2]]}];
+  const CELL = { I: [[0,0],[1,0],[2,0],[3,0]], O: [[0,0],[1,0],[0,1],[1,1]], T: [[0,0],[1,0],[2,0],[1,1]], D: [[0,0],[1,0],[2,0],[1,1]],
+    S: [[1,0],[2,0],[0,1],[1,1]], Z: [[0,0],[1,0],[1,1],[2,1]], J: [[0,0],[0,1],[1,1],[2,1]], L: [[2,0],[0,1],[1,1],[2,1]] };
+  const COUL = { I: "#3CC8F0", O: "#F7D51D", T: "#8B2F8C", D: "#D9A72E", S: "#E5412B", Z: "#7AB536", J: "#EE6FB5", L: "#F39325" };
+  const NOMS = { I: "I", O: "O", T: "T", D: "T doré", S: "S", Z: "Z", J: "J", L: "L" };
+  const rot = (c, k) => { let r = c.map(p => p.slice()); for (let i = 0; i < k; i++) r = r.map(([x, z]) => [-z, x]); return r; };
+  let filtre = 0, imageChoisie = 0;
+  function svgImage(im, silhouette, grand) {
+    const S = 10, ox = Math.floor((10 - im.w) / 2), oy = 20 - im.h;
+    let out = `<svg viewBox="-1 -1 ${10 * S + 2} ${20 * S + 2}" role="img" aria-label="${im.nom}${silhouette ? ", silhouette" : ""}">`;
+    out += `<rect x="0" y="0" width="${10 * S}" height="${20 * S}" fill="#F3F3F0"/>`;
+    for (let i = 1; i < 10; i++) out += `<line x1="${i * S}" y1="0" x2="${i * S}" y2="${20 * S}" stroke="#C9CCD1" stroke-width="0.6"/>`;
+    for (let j = 1; j < 20; j++) out += `<line x1="0" y1="${j * S}" x2="${10 * S}" y2="${j * S}" stroke="#C9CCD1" stroke-width="0.6"/>`;
+    im.pieces.forEach(([t, i, j, k]) => {
+      const cs = rot(CELL[t], k).map(([x, z]) => [ox + i + x, oy + j + z]), set = new Set(cs.map(c => c.join(",")));
+      const fill = silhouette ? "#6E6596" : COUL[t];
+      cs.forEach(([x, z]) => { out += `<rect x="${x * S}" y="${z * S}" width="${S}" height="${S}" fill="${fill}"/>`;
+        if (!silhouette) out += `<rect x="${x * S}" y="${z * S}" width="${S}" height="1.6" fill="rgba(255,255,255,.4)"/>`; });
+      if (!silhouette) {        // contour de chaque pièce : on voit où elle commence et où elle finit
+        cs.forEach(([x, z]) => {
+          const e = (dx, dz, x1, y1, x2, y2) => { if (!set.has([x + dx, z + dz].join(","))) out += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#1A1433" stroke-width="${grand ? 1.1 : 1.4}" stroke-linecap="square"/>`; };
+          e(0, -1, x * S, z * S, (x + 1) * S, z * S); e(0, 1, x * S, (z + 1) * S, (x + 1) * S, (z + 1) * S);
+          e(-1, 0, x * S, z * S, x * S, (z + 1) * S); e(1, 0, (x + 1) * S, z * S, (x + 1) * S, (z + 1) * S);
+        });
+      }
+    });
+    out += `<rect x="0" y="0" width="${10 * S}" height="${20 * S}" fill="none" stroke="#1A1433" stroke-width="1.2"/></svg>`;
+    return out;
+  }
+  const blocsNiveau = n => "■".repeat(n) + "□".repeat(5 - n);
+  function rendGalerie() {
+    const bloc = $("bloc-galerie"); bloc.hidden = JEUX[jeu].id !== "images";
+    if (bloc.hidden) return;
+    const sil = niv === 1;                 // niveau ★★ du jeu 5 : silhouette seulement
+    $("filtres").innerHTML = `<span>Difficulté :</span>` + [0, 1, 2, 3, 4, 5].map(n =>
+      `<button aria-pressed="${n === filtre}" data-f="${n}">${n === 0 ? "Toutes" : blocsNiveau(n)}</button>`).join("");
+    $("filtres").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { filtre = +b.dataset.f; bip(700); rendGalerie(); }));
+    const liste = IMAGES.map((im, i) => ({ im, i })).filter(o => !filtre || o.im.niveau === filtre);
+    if (!liste.some(o => o.i === imageChoisie)) imageChoisie = liste[0].i;
+    $("galerie").innerHTML = liste.map(({ im, i }) =>
+      `<button class="carte" aria-pressed="${i === imageChoisie}" data-i="${i}">${svgImage(im, sil, false)}<span>${im.nom}</span><span class="niv5" aria-label="difficulté ${im.niveau} sur 5">${blocsNiveau(im.niveau)}</span></button>`).join("");
+    $("galerie").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { imageChoisie = +b.dataset.i; bip(820); rendGalerie();
+      $("zoom").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" }); }));
+    const im = IMAGES[imageChoisie], compte = {};
+    im.pieces.forEach(([t]) => compte[t] = (compte[t] || 0) + 1);
+    $("zoom").innerHTML = `${svgImage(im, sil, true)}
+      <div class="info">
+        <h3>${im.nom}</h3>
+        <div class="niv5" style="color:var(--gold)">Difficulté ${blocsNiveau(im.niveau)} · ${im.pieces.length} pièces · ${im.pieces.length * 4} cases</div>
+        <p style="margin:0">${sil ? "Niveau ★★ : on ne voit que la silhouette. Trouve quelles pièces la remplissent !" : niv === 2 ? "Niveau ★★★ : inspire-toi de cette image pour inventer la tienne, puis fais-la deviner." : "Niveau ★ : pose chaque pièce à sa place, de la même couleur, dans le même sens. L'image se construit en bas du plateau."}</p>
+        <div class="bloc"><h4>PIÈCES À PRÉPARER</h4><div class="liste-pieces">${Object.keys(COUL).filter(t => compte[t]).map(t =>
+          `<span>${icone(CELL[t], COUL[t], 7)} ${compte[t]} × ${NOMS[t]}</span>`).join("")}</div></div>
+      </div>`;
+  }
+
+  function maj(defile) { rendJeux(); rendNiveaux(); rendMission(defile); rendGalerie(); }
+
+  // ---------------- son : musique chiptune (WebAudio, jouée à la demande) ----------------
+  let ctx = null, maitre = null, joue = false, muet = false, prochain = 0, pas = 0, minuteur = null;
+  const NOTE = n => { const m = /^([A-G])(#?)(\d)$/.exec(n); const i = { C: -9, D: -7, E: -5, F: -4, G: -2, A: 0, B: 2 }[m[1]] + (m[2] ? 1 : 0);
+    return 440 * Math.pow(2, (i + (+m[3] - 4) * 12) / 12); };
+  // mélodie traditionnelle russe « Korobeiniki » (1861, domaine public), arrangement original ; durée en croches
+  const MELODIE = [["E5",2],["B4",1],["C5",1],["D5",2],["C5",1],["B4",1],["A4",2],["A4",1],["C5",1],["E5",2],["D5",1],["C5",1],
+    ["B4",3],["C5",1],["D5",2],["E5",2],["C5",2],["A4",2],["A4",2],[null,2],
+    [null,1],["D5",2],["F5",1],["A5",2],["G5",1],["F5",1],["E5",3],["C5",1],["E5",2],["D5",1],["C5",1],
+    ["B4",2],["B4",1],["C5",1],["D5",2],["E5",2],["C5",2],["A4",2],["A4",2],[null,2]];
+  const BASSE = ["E2","E2","A2","A2","E2","E2","A2","A2","D2","D2","C2","C2","E2","E2","A2","A2"];   // une note par demi-mesure
+  const CROCHE = 60 / 150 / 2;
+  const sequence = []; { let t = 0; MELODIE.forEach(([n, d]) => { sequence.push({ t, n, d }); t += d; }); }
+  const LONG = 64;      // 8 mesures de 8 croches
+  function initAudio() {
+    if (ctx) return;
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    maitre = ctx.createGain(); maitre.connect(ctx.destination); reglerVolume();
+  }
+  function reglerVolume() { if (maitre) maitre.gain.setTargetAtTime(muet ? 0 : (+$("volume").value / 100) * 0.35, ctx.currentTime, 0.02); }
+  function voix(type, f, t0, dur, vol) {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type; o.frequency.value = f; o.connect(g); g.connect(maitre);
+    g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(vol, t0 + 0.008); g.gain.setTargetAtTime(vol * 0.6, t0 + 0.03, 0.05);
+    g.gain.setTargetAtTime(0, t0 + dur * 0.85, 0.02); o.start(t0); o.stop(t0 + dur + 0.1);
+  }
+  let bruit = null;
+  function charleston(t0, vol) {
+    if (!bruit) { bruit = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate); const d = bruit.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+    const s = ctx.createBufferSource(), g = ctx.createGain(), f = ctx.createBiquadFilter();
+    f.type = "highpass"; f.frequency.value = 6000; s.buffer = bruit; s.connect(f); f.connect(g); g.connect(maitre);
+    g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.04); s.start(t0);
+  }
+  function planifier() {
+    while (prochain < ctx.currentTime + 0.15) {
+      const p = pas % LONG;
+      sequence.filter(e => e.t === p && e.n).forEach(e => voix("square", NOTE(e.n), prochain, e.d * CROCHE, 0.16));
+      const b = BASSE[Math.floor(p / 4)]; voix("triangle", NOTE(b) * (p % 2 ? 2 : 1), prochain, CROCHE * 0.9, 0.32);
+      if (p % 2 === 1) charleston(prochain, 0.05);
+      prochain += CROCHE; pas++;
+    }
+  }
+  function lancer() {
+    initAudio(); ctx.resume(); joue = true; prochain = ctx.currentTime + 0.05; pas = 0;
+    clearInterval(minuteur); minuteur = setInterval(planifier, 25);
+    $("musique").textContent = "❚❚ Pause musique"; $("musique").setAttribute("aria-pressed", "true");
+  }
+  function arreter() { joue = false; clearInterval(minuteur); $("musique").textContent = "♪ Lancer la musique"; $("musique").setAttribute("aria-pressed", "false"); }
+  $("musique").addEventListener("click", () => joue ? arreter() : lancer());
+  $("muet").addEventListener("click", () => {
+    muet = !muet; $("muet").textContent = muet ? "Remettre le son" : "Couper le son"; $("muet").setAttribute("aria-pressed", String(muet));
+    if (ctx) reglerVolume();
+  });
+  $("volume").addEventListener("input", () => { if (ctx) reglerVolume(); });
+  function bip(f) { if (!ctx || muet) return; voix("square", f, ctx.currentTime, 0.07, 0.12); }
+  function fanfare() { initAudio(); ctx.resume(); if (muet) return; const t = ctx.currentTime;
+    ["C5", "E5", "G5", "C6"].forEach((n, i) => voix("square", NOTE(n), t + i * 0.09, i === 3 ? 0.35 : 0.09, 0.16)); }
+
+  // ---------------- bandeau animé (canvas en pixels) ----------------
+  const cv = $("bandeau"), g = cv.getContext("2d"), W = 320, H = 96, SOL = 80, CASE = 6;
+  const reduit = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const COULEURS = ["#3CC8F0", "#F7D51D", "#B04BB2", "#E5412B", "#7AB536", "#EE6FB5", "#F39325"];
+  const FORMES = [[[0,0],[1,0],[0,1],[1,1]], [[0,0],[1,0],[2,0],[1,1]], [[0,0],[0,1],[1,1]], [[0,0],[1,0]], [[0,0],[0,1]]];
+  let dx = 0, score = 0, t = 0, obstacles = [], prochainObs = 120, etincelles = [];
+  const hero = { x: 56, y: SOL, vy: 0, auSol: true,
+    saut(fort) { if (this.auSol) { this.vy = fort ? -4.2 : -3.4; this.auSol = false; bip(990); } } };
+  cv.addEventListener("click", () => hero.saut(false));
+
+  function bloc(x, y, c) {
+    g.fillStyle = c; g.fillRect(x, y, CASE, CASE);
+    g.fillStyle = "rgba(255,255,255,.45)"; g.fillRect(x, y, CASE, 1); g.fillRect(x, y, 1, CASE);
+    g.fillStyle = "rgba(0,0,0,.35)"; g.fillRect(x, y + CASE - 1, CASE, 1); g.fillRect(x + CASE - 1, y, 1, CASE);
+  }
+  function sapin(x, base, h, c) {
+    g.fillStyle = c;
+    for (let i = 0; i < h; i += 2) { const w = Math.floor((i / h) * h * 0.55) + 1; g.fillRect(Math.round(x - w / 2), base - h + i, w, 2); }
+    g.fillStyle = "#3B2416"; g.fillRect(Math.round(x) - 1, base, 2, 3);
+  }
+  function dessine() {
+    // ciel en bandes
+    const bandes = ["#1B1240", "#24185A", "#2F1F6E", "#3B2A80", "#4A3792"];
+    bandes.forEach((c, i) => { g.fillStyle = c; g.fillRect(0, i * 13, W, 13); });
+    g.fillStyle = "#5A47A6"; g.fillRect(0, 65, W, 15);
+    // lune pixel
+    g.fillStyle = "#FFE9A8"; g.fillRect(262, 12, 12, 12); g.fillStyle = "#4A3792"; g.fillRect(268, 12, 6, 6);
+    // sapins (la forêt de l'École des Bois), deux plans
+    for (let k = -1; k < 12; k++) { const x = ((k * 34 - dx * 0.25) % (34 * 11) + 34 * 11) % (34 * 11) - 20; sapin(x, SOL - 6, 22 + (k % 3) * 4, "#2C6B4A"); }
+    for (let k = -1; k < 9; k++) { const x = ((k * 47 + 12 - dx * 0.55) % (47 * 8) + 47 * 8) % (47 * 8) - 24; sapin(x, SOL, 30 + (k % 2) * 6, "#1E6B30"); }
+    // sol
+    g.fillStyle = "#7AB536"; g.fillRect(0, SOL, W, 3);
+    g.fillStyle = "#5C3A1E"; g.fillRect(0, SOL + 3, W, H - SOL - 3);
+    g.fillStyle = "#6E4626"; for (let x = -((dx | 0) % 12); x < W; x += 12) g.fillRect(x, SOL + 8, 6, 2);
+    // obstacles
+    obstacles.forEach(o => o.cells.forEach(([a, b]) => bloc(Math.round(o.x + a * CASE), Math.round(o.y - (o.h - b) * CASE), o.c)));
+    // héros : un petit T doré
+    const hx = hero.x, hy = Math.round(hero.y), pied = Math.floor(t / 6) % 2;
+    [[0, 2], [1, 2], [2, 2], [1, 1]].forEach(([a, b]) => bloc(hx + a * CASE, hy - (b + 1) * CASE - 3, "#F2B92E"));
+    g.fillStyle = "#1A1433"; g.fillRect(hx + 8, hy - 3 * CASE - 3 + 2, 1, 2); g.fillRect(hx + 11, hy - 3 * CASE - 3 + 2, 1, 2);
+    g.fillStyle = "#1A1433";
+    if (hero.auSol) { g.fillRect(hx + 7, hy - 3, 1, 3 - pied); g.fillRect(hx + 10, hy - 3, 1, 2 + pied); }
+    else { g.fillRect(hx + 6, hy - 3, 2, 1); g.fillRect(hx + 10, hy - 3, 2, 1); }
+    // étincelles
+    etincelles.forEach(e => { g.fillStyle = e.c; g.fillRect(Math.round(e.x), Math.round(e.y), 2, 2); });
+    // score
+    g.font = '8px "Press Start 2P", monospace'; g.fillStyle = "#FFFFFF"; g.textBaseline = "top";
+    g.fillText("SCORE " + String(score).padStart(4, "0"), 8, 8);
+  }
+  function avance() {
+    t++; dx += 1.4;
+    // héros
+    if (!hero.auSol) { hero.vy += 0.17; hero.y += hero.vy; if (hero.y >= SOL) { hero.y = SOL; hero.vy = 0; hero.auSol = true; } }
+    // pièces qui tombent du ciel puis défilent
+    prochainObs -= 1.4;
+    if (prochainObs <= 0) {
+      const f = FORMES[Math.floor(Math.random() * FORMES.length)], h = Math.max(...f.map(p => p[1])) + 1;
+      obstacles.push({ x: W + 10, y: -10, vy: 0, cells: f, h, c: COULEURS[Math.floor(Math.random() * COULEURS.length)], passe: false, pose: false });
+      prochainObs = 110 + Math.random() * 90;
+    }
+    obstacles.forEach(o => {
+      o.x -= 1.4;
+      if (!o.pose) { o.vy += 0.12; o.y += o.vy; if (o.y >= SOL) { o.y = SOL; o.pose = true; } }
+      const devant = o.x - (hero.x + 3 * CASE);
+      if (devant > 0 && devant < 14 && o.pose) hero.saut(false);
+      if (!o.passe && o.x + 3 * CASE < hero.x) { o.passe = true; score += 10;
+        for (let i = 0; i < 6; i++) etincelles.push({ x: hero.x + 9, y: hero.y - 20, vx: Math.random() * 2 - 1, vy: -Math.random() * 1.5 - 0.5, v: 30, c: COULEURS[i % 7] }); }
+    });
+    obstacles = obstacles.filter(o => o.x > -30);
+    etincelles.forEach(e => { e.x += e.vx; e.y += e.vy; e.vy += 0.05; e.v--; }); etincelles = etincelles.filter(e => e.v > 0);
+  }
+  let dernier = performance.now(), acc = 0;
+  function boucle(now) {
+    acc += Math.min(100, now - dernier); dernier = now;
+    while (acc >= 1000 / 60) { avance(); acc -= 1000 / 60; }
+    dessine(); requestAnimationFrame(boucle);
+  }
+  if (reduit) { obstacles.push({ x: 150, y: SOL, vy: 0, cells: FORMES[0], h: 2, c: COULEURS[0], passe: false, pose: true }); dessine(); }
+  else requestAnimationFrame(boucle);
+  if (document.fonts) document.fonts.ready.then(() => dessine());
+
+  maj(false);
+})();
+</script>
