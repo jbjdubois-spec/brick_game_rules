@@ -328,6 +328,15 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
 @media (max-width: 760px) { .j-choix { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; } .j-choix .j-piece { flex-shrink: 0; min-width: 52px; min-height: 52px; } }
 .j-pioche .j-choix, .j-pioche .j-aide, .j-pioche .j-score { grid-column: 1 / -1; }
 .j-pioche .j-choix { width: 100%; }
+
+/* Annuler et Recommencer : petites icônes pixel, sans cadre */
+.j-petits { gap: 2px; align-items: center; }
+.j-petits button.icone { background: none; box-shadow: none; margin: 0; padding: 6px; min-width: 44px; min-height: 44px; display: grid; place-items: center;
+  color: var(--cyan); filter: drop-shadow(2px 2px 0 #0B0918); }
+.j-petits button.icone:hover { background: none; color: #8FE3FA; }
+.j-petits button.icone .ico { width: 26px; height: 26px; display: block; }
+.j-petits button.icone:disabled { color: var(--line); filter: none; }
+@media (max-width: 760px) { .j-petits { flex-direction: row !important; } .j-petits button.icone { min-width: 40px; min-height: 40px; padding: 4px; } .j-petits button.icone .ico { width: 24px; height: 24px; } }
 </style>
 <style>body{margin:0}[hidden]{display:none!important}</style>
 </head>
@@ -393,8 +402,8 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
       <button id="j-poser" class="rond pose" aria-label="Poser la pièce (bouton 1)">✔<span>POSER</span></button>
     </div>
     <div class="j-petits">
-      <button id="j-annuler">↶ Annuler</button>
-      <button id="j-recommencer">Recommencer</button>
+      <button id="j-annuler" class="icone" aria-label="Annuler la dernière pièce (bouton 4)" title="Annuler"><svg class="ico" viewBox="0 0 12 12" aria-hidden="true" fill="currentColor" shape-rendering="crispEdges"><rect x="3" y="1" width="1" height="1"/><rect x="2" y="2" width="1" height="1"/><rect x="3" y="2" width="1" height="1"/><rect x="1" y="3" width="1" height="1"/><rect x="2" y="3" width="1" height="1"/><rect x="3" y="3" width="1" height="1"/><rect x="4" y="3" width="1" height="1"/><rect x="5" y="3" width="1" height="1"/><rect x="6" y="3" width="1" height="1"/><rect x="7" y="3" width="1" height="1"/><rect x="8" y="3" width="1" height="1"/><rect x="2" y="4" width="1" height="1"/><rect x="3" y="4" width="1" height="1"/><rect x="9" y="4" width="1" height="1"/><rect x="3" y="5" width="1" height="1"/><rect x="10" y="5" width="1" height="1"/><rect x="10" y="6" width="1" height="1"/><rect x="10" y="7" width="1" height="1"/><rect x="9" y="8" width="1" height="1"/><rect x="4" y="9" width="1" height="1"/><rect x="5" y="9" width="1" height="1"/><rect x="6" y="9" width="1" height="1"/><rect x="7" y="9" width="1" height="1"/><rect x="8" y="9" width="1" height="1"/></svg></button>
+      <button id="j-recommencer" class="icone" aria-label="Recommencer la partie" title="Recommencer"><svg class="ico" viewBox="0 0 12 12" aria-hidden="true" fill="currentColor" shape-rendering="crispEdges"><rect x="4" y="1" width="1" height="1"/><rect x="5" y="1" width="1" height="1"/><rect x="6" y="1" width="1" height="1"/><rect x="7" y="1" width="1" height="1"/><rect x="10" y="1" width="1" height="1"/><rect x="2" y="2" width="1" height="1"/><rect x="3" y="2" width="1" height="1"/><rect x="9" y="2" width="1" height="1"/><rect x="10" y="2" width="1" height="1"/><rect x="1" y="3" width="1" height="1"/><rect x="8" y="3" width="1" height="1"/><rect x="9" y="3" width="1" height="1"/><rect x="10" y="3" width="1" height="1"/><rect x="1" y="4" width="1" height="1"/><rect x="1" y="5" width="1" height="1"/><rect x="1" y="6" width="1" height="1"/><rect x="10" y="6" width="1" height="1"/><rect x="1" y="7" width="1" height="1"/><rect x="10" y="7" width="1" height="1"/><rect x="1" y="8" width="1" height="1"/><rect x="10" y="8" width="1" height="1"/><rect x="2" y="9" width="1" height="1"/><rect x="3" y="9" width="1" height="1"/><rect x="8" y="9" width="1" height="1"/><rect x="9" y="9" width="1" height="1"/><rect x="4" y="10" width="1" height="1"/><rect x="5" y="10" width="1" height="1"/><rect x="6" y="10" width="1" height="1"/><rect x="7" y="10" width="1" height="1"/></svg></button>
     </div>
   </div>
   <div id="j-fin" hidden>
