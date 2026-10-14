@@ -452,6 +452,11 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
 .j-joy::after { content: ""; position: absolute; inset: -34px; border-radius: 30%; }
 .j-joy { transition: translate .08s ease-out; z-index: 4; }
 .j-joy.actif { transition: none; box-shadow: 0 0 18px rgba(255,210,63,.35); }
+
+/* ANNULER tout à gauche de l'écran ; TOURNER puis POSER à droite (POSER tout à droite) */
+.j-ronds { flex: 1; justify-content: flex-end; }
+#j-annuler { margin-right: auto; }
+@media (max-width: 760px) { .j-commandes { justify-content: stretch; } .j-ronds { width: 100%; } }
 </style>
 <style>body{margin:0}[hidden]{display:none!important}</style>
 </head>
@@ -511,9 +516,9 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
   </div>
   <div class="j-commandes">
     <div class="j-ronds">
-      <button id="j-poser" class="rond pose" aria-label="Poser la pièce (bouton 1)">✔<span>POSER</span></button>
-      <button id="j-tourner" class="rond tourne" aria-label="Tourner la pièce (bouton 2)">⟳<span>TOURNER</span></button>
       <button id="j-annuler" class="rond annule" aria-label="Annuler la dernière pièce (bouton 4)">↶<span>ANNULER</span></button>
+      <button id="j-tourner" class="rond tourne" aria-label="Tourner la pièce (bouton 2)">⟳<span>TOURNER</span></button>
+      <button id="j-poser" class="rond pose" aria-label="Poser la pièce (bouton 1)">✔<span>POSER</span></button>
     </div>
     <div id="j-joy" class="j-joy" role="img" aria-label="Joystick : appuie et glisse pour déplacer la pièce">
       <span class="fl h">▲</span><span class="fl b">▼</span><span class="fl g">◀</span><span class="fl d">▶</span><div id="j-joy-bouton" class="j-joy-bouton"></div>
@@ -1178,7 +1183,7 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
     CEL = nouv;
     const c = cvJ(), dpr = Math.min(2, window.devicePixelRatio || 1);
     c.width = W * CEL * dpr; c.height = H * CEL * dpr; c.style.width = W * CEL + "px"; c.style.height = H * CEL + "px";
-    c.getContext("2d").setTransform(dpr, 0, 0, dpr, 0, 0); dessine();
+    c.getContext("2d").setTransform(dpr, 0, 0, dpr, 0, 0); dessine(); requestAnimationFrame(majDefile);
   }
   function bloc(g, x, y, coul, alpha, brille) {
     const s = CEL, px = x * s, py = y * s;
