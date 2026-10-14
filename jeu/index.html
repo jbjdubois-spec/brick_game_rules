@@ -177,6 +177,38 @@ footer { color: var(--muted); font-size: 18px; text-align: center; }
   .liste-pieces span { font-size: 24px; }
 }
 @media (prefers-reduced-motion: reduce) { button:active { transform: none; } }
+
+/* accueil du jeu : cartes avec niveaux, règles dessous, bouton Commencer */
+.cartouche { background: var(--panel); color: var(--ink); cursor: pointer; margin: 4px;
+  box-shadow: 0 -4px 0 0 var(--line), 0 4px 0 0 var(--line), -4px 0 0 0 var(--line), 4px 0 0 0 var(--line); }
+.cartouche[aria-current="true"] { background: #2E2558; box-shadow: 0 -4px 0 0 var(--c), 0 4px 0 0 var(--c), -4px 0 0 0 var(--c), 4px 0 0 0 var(--c); }
+[hidden] { display: none !important; }
+.c-niv { display: grid; grid-template-columns: 1fr; gap: 2px; margin-top: auto; }
+.c-niv button { margin: 4px; padding: 6px 10px; display: grid; grid-template-columns: auto 1fr; grid-template-areas: "st lib" "ok ok"; gap: 2px 8px; align-items: center; text-align: left; font-family: var(--body); font-size: 19px; line-height: 1; min-height: 44px; }
+.c-niv .st { grid-area: st; } .c-niv .lib { grid-area: lib; } .c-niv .ok { grid-area: ok; }
+.c-niv .ok:empty { display: none; }
+.c-niv .st { color: var(--gold); font-size: 12px; letter-spacing: 0; }
+.c-niv .ok { font-size: 13px; color: var(--ok); min-height: 13px; }
+.c-niv button[aria-pressed="true"] { background: var(--gold); color: #2A1B00; }
+.c-niv button[aria-pressed="true"] .st, .c-niv button[aria-pressed="true"] .ok { color: #2A1B00; }
+.jeux { align-items: stretch; }
+.cartouche { align-content: stretch; min-width: 0; }
+.c-niv button { min-width: 0; width: calc(100% - 8px); }
+.cartouche .tete svg { flex-shrink: 0; }
+.consigne-galerie { margin: 0; font-family: var(--pixel); font-size: 12px; color: var(--gold); line-height: 1.6; }
+.lancer { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; padding: 6px 0 4px; }
+.lancer button.jouer { font-size: 15px; padding: 18px 24px; }
+@media (max-width: 700px) {
+  .c-niv { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+  .c-niv button { grid-template-columns: 1fr; grid-template-areas: "st" "lib" "ok"; justify-items: center; text-align: center; font-size: 17px; letter-spacing: -0.5px; min-height: 76px; padding: 10px 0; margin: 4px 2px; overflow: hidden; }
+  .c-niv .ok:empty { display: block; }
+  .c-niv .st { font-size: 15px; }
+  .c-niv .ok { font-size: 15px; }
+  .cartouche { min-height: 0; }
+  .lancer { display: grid; grid-template-columns: 1fr; }
+  .lancer button { width: calc(100% - 8px); font-size: 13px; padding: 14px; }
+  .lancer button.jouer { font-size: 16px; padding: 20px; }
+}
 /* ===== le jeu jouable : écran plein, plateau à gauche, pièces à droite (en dessous sur téléphone) ===== */
 #jeu { position: fixed; inset: 0; z-index: 50; background: var(--bg); display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; user-select: none; -webkit-user-select: none;
   gap: 8px; padding: max(8px, env(safe-area-inset-top)) 12px max(8px, env(safe-area-inset-bottom));
@@ -270,6 +302,25 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
   .j-ronds { grid-column: 2; grid-row: 1; }
   .j-petits { grid-column: 1; grid-row: 1; justify-content: flex-start; flex-direction: column; align-items: flex-start; }
 }
+
+/* lignes à deux, téléphone posé à plat entre deux joueurs face à face :
+   le plateau reste au milieu, les commandes vont chez le joueur dont c'est le tour (tournées de 180° pour le joueur 2) */
+@media (max-width: 760px) {
+  #jeu.face { grid-template-areas: "plateau" "cote" "cmd" "haut"; grid-template-rows: minmax(0, 1fr) auto auto auto; }
+  #jeu.face .j-corps { display: contents; }
+  #jeu.face #j-obj { display: none; }
+  #jeu.face #j-zone-plateau { grid-area: plateau; }
+  #jeu.face .j-cote { grid-area: cote; max-height: 24vh; }
+  #jeu.face .j-commandes { grid-area: cmd; border-top: 4px solid var(--cyan); padding-top: 6px; }
+  #jeu.face .j-haut { grid-area: haut; }
+  #jeu.face .j-haut #j-titre::before { content: "JOUEUR 1 · "; color: var(--cyan); }
+  #jeu.face.j2 { grid-template-areas: "haut" "cmd" "cote" "plateau"; grid-template-rows: auto auto auto minmax(0, 1fr); }
+  #jeu.face.j2 .j-haut, #jeu.face.j2 .j-commandes, #jeu.face.j2 .j-cote, #jeu.face.j2 .j-fin-boite { transform: rotate(180deg); }
+  #jeu.face.j2 .j-commandes { border-top-color: var(--pink); }
+  #jeu.face.j2 .j-haut #j-titre::before { content: "JOUEUR 2 · "; color: var(--pink); }
+  #jeu.face .j-cote, #jeu.face .j-commandes, #jeu.face .j-haut { animation: j-arrive .35s ease-out; }
+}
+@keyframes j-arrive { from { opacity: 0; } to { opacity: 1; } }
 </style>
 <style>body{margin:0}[hidden]{display:none!important}</style>
 </head>
@@ -288,29 +339,24 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
     <div class="astuce">clic = saut !</div>
   </div>
 
-  <section class="etape" aria-labelledby="t1">
-    <h2 id="t1">1 · Choisis ton jeu <i>— 5 jeux</i></h2>
+  <section class="etape" aria-label="Choisis ton jeu et ton niveau">
     <div class="jeux" id="jeux"></div>
     <div class="points" id="points" aria-hidden="true"></div>
     <p class="glisse">◀ Fais glisser pour changer de jeu ▶</p>
   </section>
 
-  <section class="etape" aria-labelledby="t2">
-    <h2 id="t2">2 · Choisis ton niveau</h2>
-    <div class="niveaux" id="niveaux"></div>
-  </section>
-
-  <section class="etape" aria-labelledby="t3">
-    <h2 id="t3">3 · Ta mission</h2>
+  <section class="etape" aria-label="Règles du jeu">
     <article class="mission" id="mission" aria-live="polite"></article>
   </section>
 
-  <section class="etape" aria-labelledby="t4" id="bloc-galerie" hidden>
-    <h2 id="t4">4 · Les cartes images <i>— à reproduire sur le plateau</i></h2>
+  <section class="etape" aria-label="Choisis ta carte image" id="bloc-galerie" hidden>
+    <p class="consigne-galerie">Choisis ta carte image :</p>
     <div class="galerie-filtres" id="filtres" role="group" aria-label="Difficulté des images"></div>
     <div class="zoom" id="zoom"></div>
     <div class="galerie" id="galerie"></div>
   </section>
+
+  <div class="lancer" id="lancer"></div>
 
 <div id="jeu" hidden role="dialog" aria-modal="true" aria-labelledby="j-titre">
   <div class="j-haut">
@@ -451,44 +497,42 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
     const c = $("jeux"), b = c.children[jeu]; if (!b || !mobile()) return;
     c.scrollTo({ left: b.offsetLeft - (c.clientWidth - b.clientWidth) / 2, behavior: doux() });
   }
+  const DESC_NIV = ["Pour découvrir", "Un peu plus de défi", "Pour les champions"];
   function rendJeux() {
-    if ($("jeux").children.length) {          // déjà construites : on met juste à jour l'état
-      [...$("jeux").children].forEach((b, i) => {
-        b.setAttribute("aria-pressed", i === jeu);
-        b.querySelector(".etoiles").textContent = [0, 1, 2].map(n => etoiles[JEUX[i].id + n] ? "★" : "☆").join("");
-      });
-      $("points").innerHTML = JEUX.map((j, i) => `<span style="--c:${j.c}" class="${i === jeu ? "on" : ""}"></span>`).join("");
-      return;
-    }
-    $("jeux").innerHTML = JEUX.map((j, i) => {
-      const e = [0, 1, 2].map(n => etoiles[j.id + n] ? "★" : "☆").join("");
-      return `<button class="cartouche" style="--c:${j.c}" aria-pressed="${i === jeu}" data-i="${i}">
+    const c = $("jeux");
+    if (!c.children.length) {
+      c.innerHTML = JEUX.map((j, i) => `<div class="cartouche" style="--c:${j.c}" data-i="${i}" role="group" aria-label="${j.nom}">
         <span class="bande" aria-hidden="true"></span>
         <span class="tete"><span class="nom">${i + 1}. ${j.nom}</span>${icone(j.piece, j.c, 9)}</span>
-        <span class="but">${j.but}</span><span class="etoiles" aria-label="Niveaux réussis">${e}</span></button>`;
-    }).join("");
-    $("jeux").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { jeu = +b.dataset.i; bip(660); maj(true); }));
-    // sur mobile : la carte arrêtée au centre du carrousel devient le jeu choisi
-    let attente = null;
-    $("jeux").addEventListener("scroll", () => {
-      if (!mobile()) return;
-      clearTimeout(attente);
-      attente = setTimeout(() => {
-        const c = $("jeux"), milieu = c.scrollLeft + c.clientWidth / 2;
-        let best = 0, d = 1e9;
-        [...c.children].forEach((b, i) => { const m = Math.abs(b.offsetLeft + b.clientWidth / 2 - milieu); if (m < d) { d = m; best = i; } });
-        if (best !== jeu) { jeu = best; bip(660); rendJeux(); rendNiveaux(); rendMission(false); rendGalerie(); }
-      }, 140);
-    }, { passive: true });
-    rendJeux();
+        <span class="but">${j.but}</span>
+        <span class="c-niv">${LIB_NIV.map((l, n) => `<button data-i="${i}" data-n="${n}" title="${DESC_NIV[n]}"><span class="st">${"★".repeat(n + 1)}${"☆".repeat(2 - n)}</span><span class="lib">${l}</span><span class="ok" aria-hidden="true"></span></button>`).join("")}</span></div>`).join("");
+      c.querySelectorAll(".c-niv button").forEach(b => b.addEventListener("click", e => { e.stopPropagation(); jeu = +b.dataset.i; niv = +b.dataset.n; bip(880); maj(false); }));
+      c.querySelectorAll(".cartouche").forEach(k => k.addEventListener("click", () => { const i = +k.dataset.i; if (i !== jeu) { jeu = i; bip(660); maj(false); } }));
+      // sur mobile : la carte arrêtée au centre du carrousel devient le jeu choisi, et les règles changent avec elle
+      let attente = null;
+      c.addEventListener("scroll", () => {
+        if (!mobile()) return;
+        clearTimeout(attente);
+        attente = setTimeout(() => {
+          const milieu = c.scrollLeft + c.clientWidth / 2;
+          let best = 0, d = 1e9;
+          [...c.children].forEach((b, i) => { const m = Math.abs(b.offsetLeft + b.clientWidth / 2 - milieu); if (m < d) { d = m; best = i; } });
+          if (best !== jeu) { jeu = best; bip(660); rendJeux(); rendMission(false); rendGalerie(); }
+        }, 140);
+      }, { passive: true });
+    }
+    [...c.children].forEach((k, i) => {
+      k.setAttribute("aria-current", String(i === jeu));
+      k.querySelectorAll(".c-niv button").forEach(b => { const n = +b.dataset.n, gagne = etoiles[JEUX[i].id + n];
+        b.setAttribute("aria-pressed", String(i === jeu && n === niv));
+        b.querySelector(".ok").textContent = gagne ? "✔" : "";
+        b.setAttribute("aria-label", `${JEUX[i].nom}, niveau ${LIB_NIV[n]}${gagne ? ", déjà réussi" : ""}`); });
+    });
+    $("points").innerHTML = JEUX.map((j, i) => `<span style="--c:${j.c}" class="${i === jeu ? "on" : ""}"></span>`).join("");
   }
-  function rendNiveaux() {
-    $("niveaux").innerHTML = LIB_NIV.map((l, n) =>
-      `<button aria-pressed="${n === niv}" data-n="${n}"><span class="st">${"★".repeat(n + 1)}${"☆".repeat(2 - n)}</span><span class="lib">${l}</span><span class="desc">${["Pour découvrir", "Un peu plus de défi", "Pour les champions"][n]}</span></button>`).join("");
-    $("niveaux").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { niv = +b.dataset.n; bip(880); maj(true); }));
-  }
+  function rendNiveaux() {}
   function rendMission(defile) {
-    const j = JEUX[jeu], m = j.niveaux[niv], deja = etoiles[j.id + niv];
+    const j = JEUX[jeu], m = j.niveaux[niv];
     const el = $("mission"); el.style.setProperty("--c", j.c);
     el.innerHTML = `
       <div class="titre"><h3>${j.nom}</h3><span class="niv">${"★".repeat(niv + 1)}${"☆".repeat(2 - niv)} ${LIB_NIV[niv]}</span></div>
@@ -498,20 +542,11 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
         <div class="bloc"><h4>C'EST RÉUSSI QUAND</h4><p>${m.reussi}</p><h4 style="margin-top:8px">PIÈCES</h4><p>${m.pieces}</p></div>
       </div>
       <div class="bloc adulte"><h4>POUR L'ADULTE</h4><p>${m.adulte} On apprend : ${j.apprend}</p></div>
-      <div class="actions">
-        <button class="jaune jouer" id="jouer">▶ JOUER À L'ÉCRAN</button>
-        <button id="reussi">${deja ? "★ Encore réussi !" : "★ Défi réussi !"}</button>
-        <button id="hasard">Mission au hasard</button>
-        <button id="suivant">${niv < 2 ? "Niveau suivant" : "Jeu suivant"}</button>
-        <span class="bravo" id="bravo">${deja ? "Déjà réussi : bravo !" : ""}</span>
-      </div>`;
+      `;
+    $("lancer").innerHTML = `<button class="jaune jouer" id="jouer">▶ COMMENCER LE JEU</button><button id="hasard">Mission au hasard</button>`;
     $("jouer").addEventListener("click", () => ouvreJeu());
-    $("reussi").addEventListener("click", () => {
-      etoiles[j.id + niv] = true; sauve(); fanfare(); rendJeux();
-      $("bravo").textContent = "BRAVO ! +1 étoile"; hero.saut(true);
-    });
-    $("hasard").addEventListener("click", () => { jeu = Math.floor(Math.random() * 5); niv = Math.floor(Math.random() * 3); bip(520); maj(true); });
-    $("suivant").addEventListener("click", () => { if (niv < 2) niv++; else { niv = 0; jeu = (jeu + 1) % 5; } bip(740); maj(true); });
+    $("hasard").addEventListener("click", () => { jeu = Math.floor(Math.random() * 5); niv = Math.floor(Math.random() * 3); bip(520); maj(false);
+      $("mission").scrollIntoView({ behavior: doux(), block: "start" }); });
     if (defile) el.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" });
   }
 
@@ -1064,6 +1099,9 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
   function majPanneau() {
     if (!G.ouvert) return;
     const m = G.mode, p = elJ("j-pieces"), info = elJ("j-info");
+    // lignes à deux sur téléphone posé à plat : les commandes passent du côté du joueur dont c'est le tour, retournées pour lui
+    const face = m === "lignes" && matchMedia("(max-width: 760px)").matches;
+    elJ("jeu").classList.toggle("face", face); elJ("jeu").classList.toggle("j2", face && G.tour % 2 === 1);
     elJ("j-titre").textContent = `${JEUX[jeu].nom} · ${"★".repeat(niv + 1)}${"☆".repeat(2 - niv)}`;
     elJ("j-obj").textContent = OBJ.txt;
     // pièces disponibles
@@ -1183,7 +1221,7 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
     if (!G.sel) { dire("Choisis d'abord une pièce."); return; }
     if (!G.pos) prendEnMain();
     const cs = casesMain(), pb = raisonInvalide(G.sel, cs);
-    if (pb) { dire(pb + " Déplace-la avec les flèches."); bip(180); dessine(); return; }
+    if (pb) { dire(pb + " Déplace-la un peu."); bip(180); dessine(); return; }
     G.pos = null; poserCases(G.sel, G.rot, cs); majPanneau(); dessine();
   }
   function pieceSuivante(d) {
@@ -1294,7 +1332,7 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
     requestAnimationFrame(dimensionne); bip(880);
     try { elJ("j-poser").focus({ preventScroll: true }); } catch (e) {}
   }
-  function fermeJeu() { G.ouvert = false; clearTimeout(G.chrono); elJ("jeu").hidden = true; document.body.style.overflow = ""; window.scrollTo(0, G.defile || 0); try { speechSynthesis.cancel(); } catch (e) {} majPanneauVide(); }
+  function fermeJeu() { G.ouvert = false; elJ("jeu").classList.remove("face", "j2"); clearTimeout(G.chrono); elJ("jeu").hidden = true; document.body.style.overflow = ""; window.scrollTo(0, G.defile || 0); try { speechSynthesis.cancel(); } catch (e) {} majPanneauVide(); }
   function majPanneauVide() { rendMission(false); }
   elJ("j-quitter").addEventListener("click", fermeJeu);
   elJ("j-tourner").addEventListener("click", tourner);
