@@ -321,6 +321,13 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
   #jeu.face .j-cote, #jeu.face .j-commandes, #jeu.face .j-haut { animation: j-arrive .35s ease-out; }
 }
 @keyframes j-arrive { from { opacity: 0; } to { opacity: 1; } }
+
+/* jeu 3 : sélecteur de la pièce mystère */
+.j-choix { display: flex; flex-wrap: wrap; gap: 2px; }
+.j-choix .j-piece { min-width: 58px; min-height: 58px; }
+@media (max-width: 760px) { .j-choix { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; } .j-choix .j-piece { flex-shrink: 0; min-width: 52px; min-height: 52px; } }
+.j-pioche .j-choix, .j-pioche .j-aide, .j-pioche .j-score { grid-column: 1 / -1; }
+.j-pioche .j-choix { width: 100%; }
 </style>
 <style>body{margin:0}[hidden]{display:none!important}</style>
 </head>
@@ -477,6 +484,18 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
       ] },
   ];
   const LIB_NIV = ["Facile", "Moyen", "Difficile"];
+  Object.assign(JEUX.find(j => j.id === "pioche"), { nom: "La pièce mystère", but: "Retrouver une pièce cachée en suivant son contour.",
+    apprend: "se repérer case par case, mémoriser une forme, imaginer ce qu'on ne voit pas.",
+    niveaux: [
+      { objectif: "Une pièce est cachée au milieu du plateau. Fais le tour de son contour avec le curseur, puis dis laquelle c'est.", pieces: "5 pièces mystère, l'une après l'autre",
+        etapes: ["Déplace le curseur case par case avec le joystick.", "Quand il touche la pièce cachée, le bord s'allume, puis s'efface doucement.", "Fais tout le tour, choisis la pièce dans la liste et appuie sur VALIDER."],
+        reussi: "Tu retrouves au moins 3 pièces sur 5.", adulte: "Les bords des 3 dernières cases restent allumés : laissez l'enfant faire tout le tour avant de répondre." },
+      { objectif: "La pièce se cache n'importe où sur le plateau, dans n'importe quel sens. Trouve-la, fais le tour, et devine laquelle c'est.", pieces: "5 pièces mystère, l'une après l'autre",
+        etapes: ["Explore le plateau avec le curseur pour trouver la pièce.", "Dès que le bord s'allume, suis-le pour faire le tour.", "Choisis la pièce et valide. 3 essais par pièce."],
+        reussi: "Tu retrouves au moins 3 pièces sur 5.", adulte: "Aidez à chercher avec méthode : ligne par ligne, comme on lit un livre." },
+      { objectif: "Seul le bord à côté du curseur reste allumé : il faut tout retenir ! Et tu dois aussi donner le bon sens de la pièce.", pieces: "5 pièces mystère, l'une après l'autre",
+        etapes: ["Trouve la pièce et fais le tour en mémorisant sa forme.", "Choisis la pièce, puis tourne-la avec ⟳ pour la mettre dans le même sens que la pièce cachée.", "Valide. Et explore bien les coins du plateau : un secret s'y cache…"],
+        reussi: "Tu retrouves au moins 3 pièces sur 5, dans le bon sens.", adulte: "Dessiner le contour avec le doigt dans l'air aide à le mémoriser." } ] });
 
   // ---------------- mémoire locale (étoiles gagnées) ----------------
   let etoiles = {};
@@ -834,10 +853,6 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
       const pose = cs.some(([x, y]) => y === H - 1 || (G.grille[y + 1] && G.grille[y + 1][x] && !cs.some(([a, b]) => a === x && b === y + 1)));
       if (!pose) return "Comme dans le vrai Tetris : la pièce doit reposer sur le fond ou sur une autre pièce.";
     }
-    if (G.mode === "pioche" && G.niv >= 1 && G.poses.length) {
-      const touche = cs.some(([x, y]) => [[1,0],[-1,0],[0,1],[0,-1]].some(([dx, dy]) => { const yy = y + dy, xx = x + dx; return yy >= 0 && yy < H && xx >= 0 && xx < W && G.grille[yy][xx]; }));
-      if (!touche) return "Au niveau 2, la pièce doit toucher une pièce déjà posée.";
-    }
     if (t === "D" && G.mode === "puzzle" && G.niv === 2 && TYPES7.some(k => G.stock[k] > 0)) return "Le T trophée se pose en dernier, quand toutes les autres pièces sont posées.";
     return null;
   }
@@ -922,7 +937,7 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
     Object.assign(G, { mode: m, niv: n, grille: Array.from({ length: H }, () => Array(W).fill(null)), poses: [], stock: {}, sel: null, rot: 0,
       zone: null, cibles: null, modele: null, modeleVisible: true, fini: false, tour: 0, sac: [], courante: null, devine: false, score: 0,
       essais: 0, lignes: 0, image: null, verrou: null, confirme: null, revoir: 2, historique: [], message: "", minuteur: null, pos: null, choixNom: 0 });
-    clearTimeout(G.chrono);
+    clearTimeout(G.chrono); G.partie = (G.partie || 0) + 1;
     if (m === "puzzle") {
       if (n === 0) { G.zone = rect(3, 16, 4, 4); G.stock = { I: 4, O: 4 }; OBJ.txt = "Remplis le carré en pointillés avec les O et les I."; }
       if (n === 1) { G.zone = rect(0, 10, 10, 10); G.sac = tirerSac(25); G.courante = G.sac.shift(); G.stock = {}; G.echanges = 3;
@@ -939,10 +954,11 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
       if (n === 2) { G.modeleVisible = false; OBJ.txt = "Écoute ou lis les consignes, et pose les pièces dans la moitié du bas."; }
     }
     if (m === "pioche") {
-      G.sac = tirerSac(); G.courante = G.sac.shift(); G.devine = false; G.rotMystere = Math.floor(Math.random() * 4);
-      OBJ.txt = n === 0 ? "Quelle est cette pièce ? Choisis son nom, puis pose-la où tu veux." :
-                n === 1 ? "Devine la pièce d'après son ombre, puis pose-la contre une pièce déjà posée." :
-                          "Lis la description et devine la pièce, puis pose-la contre une pièce déjà posée.";
+      G.manche = 0; nouvelleMystere();
+      OBJ.txt = n === 0 ? "Une pièce est cachée au milieu du plateau. Fais le tour de son contour avec le curseur, puis dis laquelle c'est." :
+                n === 1 ? "Une pièce est cachée quelque part sur le plateau. Trouve-la, fais le tour de son contour, puis dis laquelle c'est." :
+                          "Pièce cachée n'importe où, le contour s'efface vite : retrouve la pièce ET son sens !";
+      if (!G.anim) { G.anim = true; requestAnimationFrame(animMystere); }
     }
     if (m === "lignes") {
       if (n === 0) { G.stock = stockTous(false); G.but = 3; } else { G.sac = tirerSac(); G.courante = G.sac.shift(); G.but = n === 1 ? 5 : 10; }
@@ -958,7 +974,7 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
       } else { G.stock = stockTous(true); OBJ.txt = "Invente ton image avec toutes les pièces, puis appuie sur « J'ai fini »."; }
     }
     choisirPremier();
-    dire(m === "pioche" ? "Quelle est cette pièce ? Choisis son nom, puis appuie sur ✔." :
+    dire(m === "pioche" ? "Déplace le curseur avec le joystick. Quand il touche la pièce cachée, son bord s'allume." :
       "Pose ton doigt sur le plateau et glisse pour déplacer la pièce. ⟳ pour tourner, ✔ pour poser.");
   }
   function choisirPremier() {
@@ -986,10 +1002,6 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
       else if (G.niv === 1 && G.courante && !piecesPossibles(G.courante)) dire("Cette pièce ne rentre plus nulle part : utilise « Changer de pièce ».");
     }
     if (m === "copie" && G.poses.length === G.modele.length) verifieCopie();
-    if (m === "pioche") {
-      if (G.score >= (G.niv === 1 ? 3 : 5)) return gagne(G.niv === 1 ? "3 bonnes devinettes : bravo !" : "5 pièces bien nommées : bravo !");
-      dire("Nouvelle pièce mystère !");
-    }
     if (m === "images" && G.niv < 2 && G.zone && [...G.zone].every(k => { const [x, y] = k.split(",").map(Number); return G.grille[y][x]; })) {
       if (G.niv === 0) { const ok = G.cibles.every(c => c.cs.every(([x, y]) => G.grille[y][x] && G.grille[y][x].t === c.t));
         ok ? gagne(`« ${G.image.nom} » est terminé, toutes les couleurs sont justes !`) : gagne(`« ${G.image.nom} » est rempli ! Quelques couleurs sont échangées, mais l'image est là.`); }
@@ -1056,6 +1068,7 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
   }
   function dessine() {
     const c = cvJ(); if (!c || !G.ouvert) return; const g = c.getContext("2d"), s = CEL;
+    if (G.mode === "pioche" && G.mys) return dessineMystere(g, s);
     g.fillStyle = "#0B0918"; g.fillRect(0, 0, W * s, H * s);
     // zone de jeu, séparation modèle / copie
     if (G.zone) { g.fillStyle = "rgba(255,210,63,.10)"; G.zone.forEach(k => { const [x, y] = k.split(",").map(Number); g.fillRect(x * s, y * s, s, s); }); }
@@ -1089,7 +1102,7 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
       if (pb) g.setLineDash([5, 3]); contour(g, cs, pb ? "#FF7070" : "#FFFFFF", 3); g.setLineDash([]);
     }
   }
-  function pretAPoser() { return !(G.mode === "pioche" && !G.devine); }
+  function pretAPoser() { return G.mode !== "pioche"; }
 
   // ---------------- panneau (pièces, actions) ----------------
   const miniSVG = (t, s, r) => { const c = tourneP(PC[t].c, r || 0), mx = Math.min(...c.map(p => p[0])), my = Math.min(...c.map(p => p[1]));
@@ -1107,14 +1120,9 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
     // pièces disponibles
     let html = "";
     if (m === "pioche") {
-      const t = G.courante;
-      if (!t) html = `<p class="j-aide">Le sac est vide !</p>`;
-      else if (!G.devine) {
-        const indice = G.niv === 0 ? `<div class="j-mystere">${miniSVG(t, 22, 0)}</div>` : G.niv === 1 ? `<div class="j-mystere ombre">${silhouetteSVG(t, 22, G.rotMystere)}</div>` : `<p class="j-desc">« ${DESCRIPTIONS[t]} »</p>`;
-        html = `<div class="j-pioche">${indice}<p class="j-aide">${G.niv === 0 ? "Comment s'appelle cette pièce ?" : "Quelle pièce est-ce ?"}</p>
-          <div class="j-noms">${TYPES7.map(k => `<button class="j-nom" data-nom="${k}" aria-current="${TYPES7[G.choixNom || 0] === k}">${k}</button>`).join("")}</div>
-          <p class="j-score">Bonnes réponses : ${G.score} · essais : ${G.essais}</p></div>`;
-      } else html = `<div class="j-pioche"><div class="j-mystere">${miniSVG(t, 22, 0)}</div><p class="j-aide">C'est bien le <b>${PC[t].nom}</b> ! Pose-le sur le plateau.</p><p class="j-score">Bonnes réponses : ${G.score} · essais : ${G.essais}</p></div>`;
+      html = `<div class="j-pioche"><p class="j-aide">${G.salle ? "Salle secrète ! Sors par la porte en haut à gauche." : G.niv === 2 ? "Quelle pièce est cachée, et dans quel sens ? Choisis-la puis tourne-la avec ⟳." : "Quelle pièce est cachée ? Choisis-la :"}</p>
+        <div class="j-choix">${TYPES7.map(k => `<button class="j-piece" data-k="${k}" aria-pressed="${G.choix === k}" aria-label="Pièce ${k}" ${G.attente || G.salle ? "disabled" : ""}>${miniSVG(k, 12, G.niv === 2 && G.choix === k ? G.rotChoix : 0)}<span>${k}</span></button>`).join("")}</div>
+        <p class="j-score">Pièce ${Math.min(G.manche, MYS.MANCHES)} / ${MYS.MANCHES} · trouvées : ${G.score}${G.essaisPiece ? ` · essais ratés : ${G.essaisPiece} / ${MYS.ESSAIS}` : ""}</p></div>`;
     } else if (G.courante) {
       const t = G.courante;
       html = `<div class="j-pioche"><p class="j-aide">Pièce tirée au hasard :</p><div class="j-mystere">${miniSVG(t, 22, G.rot)}</div>
@@ -1127,7 +1135,7 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
     }
     p.innerHTML = html;
     p.querySelectorAll(".j-piece").forEach(b => b.addEventListener("pointerdown", e => { choisir(b.dataset.t); demarreGlisse(e); }));
-    p.querySelectorAll(".j-nom").forEach(b => b.addEventListener("click", () => devine(b.dataset.nom)));
+    p.querySelectorAll(".j-choix .j-piece").forEach(b => b.addEventListener("click", () => choisirMystere(b.dataset.k)));
     const ech = elJ("j-echange"); if (ech) ech.addEventListener("click", () => { if (!G.echanges) return; G.echanges--; G.sac.push(G.courante); G.courante = G.sac.shift(); G.sel = G.courante; G.rot = 0; bip(520); majPanneau(); dessine(); });
     // informations propres au mode
     let inf = "";
@@ -1144,19 +1152,12 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
     info.querySelectorAll(".j-voir").forEach(b => b.addEventListener("click", () => { const [t, r] = b.dataset.svg.split(","); b.outerHTML = miniSVG(t, 9, +r); }));
     const fi = elJ("j-fini"); if (fi) fi.addEventListener("click", () => G.poses.length ? gagne(`Ton image a ${G.poses.length} pièces. Raconte-la ou fais-la deviner !`) : dire("Pose d'abord quelques pièces !"));
     const st = elJ("j-stop"); if (st) st.addEventListener("click", () => { const trous = [...G.zone].filter(k => { const [x, y] = k.split(",").map(Number); return !G.grille[y][x]; }).length; fin(`Tu t'arrêtes avec ${trous} cases vides.`, trous <= 8); });
-    elJ("j-tourner").disabled = !G.sel || G.fini || (m === "pioche" && !G.devine);
-    elJ("j-poser").textContent = ""; elJ("j-poser").innerHTML = (m === "pioche" && !G.devine) ? "✔<span>CHOISIR</span>" : "✔<span>POSER</span>";
-    elJ("j-poser").disabled = G.fini || (m !== "pioche" && !G.sel) || (m === "pioche" && !G.courante);
+    elJ("j-tourner").disabled = m === "pioche" ? (G.niv !== 2 || !G.choix || G.fini || G.attente || G.salle) : (!G.sel || G.fini);
+    elJ("j-poser").innerHTML = m === "pioche" ? "✔<span>VALIDER</span>" : "✔<span>POSER</span>";
+    elJ("j-poser").disabled = G.fini || (m !== "pioche" && !G.sel) || (m === "pioche" && (G.attente || G.salle));
     elJ("j-annuler").disabled = !G.historique.length || G.fini;
   }
   function choisir(t) { if (G.courante || G.fini) return; if (!G.stock[t]) return; if (G.sel !== t) { G.sel = t; G.rot = 0; borne(); } bip(820); majPanneau(); dessine(); }
-  function devine(nom) {
-    if (G.devine || !G.courante) return; G.essais++;
-    if (nom === G.courante) { G.score++; G.devine = true; G.sel = G.courante; G.rot = 0; bip(880); dire("Bravo, c'est bien ça ! Pose la pièce sur le plateau."); }
-    else { bip(200); dire(G.niv === 0 ? "Non, regarde bien la forme et réessaie !" : "Ce n'est pas ça. Essaie encore !"); }
-    if (G.mode === "pioche" && G.niv === 1 && G.essais >= 5 && G.score < 3 && !G.devine) fin(`${G.score} bonne devinette sur 5. On réessaie ?`, false);
-    majPanneau(); dessine();
-  }
   function annuler() {
     if (!G.historique.length || G.fini) return;
     const id = G.historique.pop(), p = G.poses.find(q => q.id === id); if (!p) return;
@@ -1204,12 +1205,13 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
   function centreSur(cx, cy) { const [w, h] = taille(formeN(G.sel, G.rot)); G.pos = [cx - Math.floor((w - 1) / 2), cy - Math.floor((h - 1) / 2)]; borne(); }
   function deplace(dx, dy) {
     if (!G.ouvert || G.fini || finOuverte()) return;
-    if (G.mode === "pioche" && !G.devine && G.courante) { if (dx || dy) { G.choixNom = ((G.choixNom || 0) + (dx || dy) + 7) % 7; bip(700); majPanneau(); } return; }
+    if (G.mode === "pioche") { if (G.mys) bougeCurseur(dx, dy); return; }
     if (!pieceActive()) return; if (!G.pos) prendEnMain();
     const avant = G.pos.join(); G.pos = [G.pos[0] + dx, G.pos[1] + dy]; borne();
     bip(G.pos.join() === avant ? 160 : 520); dessine();
   }
   function tourner() {
+    if (G.mode === "pioche") return tournerChoix();
     if (!pieceActive()) return; if (!G.pos) prendEnMain();
     const [w, h] = taille(formeN(G.sel, G.rot)), cx = G.pos[0] + (w - 1) / 2, cy = G.pos[1] + (h - 1) / 2;
     G.rot = (G.rot + 1) % 4; const [w2, h2] = taille(formeN(G.sel, G.rot));
@@ -1217,7 +1219,7 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
   }
   function valider() {
     if (!G.ouvert || G.fini || finOuverte()) return;
-    if (G.mode === "pioche" && !G.devine) { if (G.courante) devine(TYPES7[G.choixNom || 0]); return; }
+    if (G.mode === "pioche") return validerMystere();
     if (!G.sel) { dire("Choisis d'abord une pièce."); return; }
     if (!G.pos) prendEnMain();
     const cs = casesMain(), pb = raisonInvalide(G.sel, cs);
@@ -1225,8 +1227,142 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
     G.pos = null; poserCases(G.sel, G.rot, cs); majPanneau(); dessine();
   }
   function pieceSuivante(d) {
+    if (G.mode === "pioche") { const i = TYPES7.indexOf(G.choix); return choisirMystere(TYPES7[(i + d + 7) % 7]); }
     if (G.courante || G.fini || finOuverte()) return; const dispo = Object.keys(PC).filter(k => G.stock[k] > 0); if (!dispo.length) return;
     const i = dispo.indexOf(G.sel); choisir(dispo[(i + d + dispo.length) % dispo.length]);
+  }
+
+  // =====================================================================
+  //  JEU 3 · LA PIÈCE MYSTÈRE : une pièce est cachée sur le plateau.
+  //  On promène un curseur d'une case ; quand il touche la pièce, le bord touché s'allume puis s'efface.
+  //  Niveaux 1 et 2 : les bords des 3 dernières cases restent allumés. Niveau 3 : seulement la case actuelle,
+  //  et il faut aussi donner le sens de la pièce. Niveau 3 : une salle secrète derrière le coin en haut à droite.
+  // =====================================================================
+  const MYS = { MANCHES: 5, FENETRE: [3, 3, 1], FONDU: [1500, 1500, 1000], ESSAIS: 3 };
+  const VOISINS = [[0, -1, "h"], [0, 1, "b"], [-1, 0, "g"], [1, 0, "d"]];   // côté de la case CACHÉE touché par le curseur
+  const COTE_OPPOSE = { h: "b", b: "h", g: "d", d: "g" };
+  function nouvelleMystere() {
+    const t = TYPES7[Math.floor(Math.random() * 7)], r = G.niv === 0 ? 0 : Math.floor(Math.random() * 4), f = formeN(t, r), [w, h] = taille(f);
+    // jamais contre le bord du plateau : toutes les cases entre x = 1..8 et y = 1..18
+    const x = G.niv === 0 ? Math.floor((W - w) / 2) : 1 + Math.floor(Math.random() * (W - 1 - w));
+    const y = G.niv === 0 ? Math.floor((H - h) / 2) : 1 + Math.floor(Math.random() * (H - 1 - h));
+    const cs = f.map(([a, b]) => [x + a, y + b]);
+    G.mys = { t, r, cs, set: new Set(cs.map(([a, b]) => cle(a, b))) };
+    G.cur = [4, H - 1]; G.fen = []; G.traces = new Map(); G.revele = false; G.attente = false; G.essaisPiece = 0;
+    G.choix = null; G.rotChoix = 0; G.salle = false;
+    G.manche = (G.manche || 0) + 1;
+    majTraces();
+  }
+  function bordsAutour(c) {   // bords de la pièce cachée qui touchent la case du curseur
+    const out = []; VOISINS.forEach(([dx, dy, cote]) => { const x = c[0] + dx, y = c[1] + dy; if (G.mys.set.has(cle(x, y))) out.push(`${x},${y},${COTE_OPPOSE[cote]}`); });
+    return out;
+  }
+  function majTraces() {
+    const now = performance.now(), ici = bordsAutour(G.cur), n = MYS.FENETRE[G.niv];
+    G.fen.push(ici); while (G.fen.length > n) G.fen.shift();
+    const garde = new Set(G.fen.flat());
+    G.traces.forEach((v, k) => { if (!garde.has(k) && v.fondu === null) v.fondu = now; });
+    garde.forEach(k => G.traces.set(k, { fondu: null }));
+    if (ici.length && G.traces.size) bip(300 + 60 * ici.length);
+  }
+  function bougeCurseur(dx, dy) {
+    if (G.fini || G.attente || finOuverte()) return;
+    if (G.salle) {                                           // dans la salle secrète
+      const nx = G.cur[0] + dx, ny = G.cur[1] + dy;
+      if (nx < 0 && G.cur[1] === 0) { G.salle = false; G.cur = [W - 1, 0]; G.fen = []; majTraces(); bip(520); dire("Te revoilà sur le plateau. Continue à chercher la pièce mystère !"); majPanneau(); return; }
+      if (nx < 0 || nx >= W || ny < 0 || ny >= H) { bip(140); return; }
+      G.cur = [nx, ny]; bip(500); return;
+    }
+    if (G.niv === 2 && dx === 1 && G.cur[0] === W - 1 && G.cur[1] === 0) {   // easter egg : le coin en haut à droite est une porte
+      G.salle = true; G.cur = [0, 0]; fanfare(); dire("Tu as trouvé la salle secrète ! La porte à gauche te ramène au plateau."); majPanneau(); return;
+    }
+    const nx = G.cur[0] + dx, ny = G.cur[1] + dy;
+    if (nx < 0 || nx >= W || ny < 0 || ny >= H) { bip(140); return; }
+    if (G.mys.set.has(cle(nx, ny))) {                         // on se cogne contre la pièce : son bord se rallume
+      bip(180); G.traces.forEach((v, k) => { if (G.fen.flat().includes(k)) v.fondu = null; }); return;
+    }
+    G.cur = [nx, ny]; majTraces(); if (!bordsAutour(G.cur).length) bip(560);
+  }
+  function choisirMystere(k) { if (G.fini || G.attente || G.salle) return; if (G.choix !== k) { G.choix = k; G.rotChoix = 0; } bip(820); majPanneau(); }
+  function tournerChoix() { if (G.niv !== 2 || !G.choix || G.attente || G.fini) return; G.rotChoix = (G.rotChoix + 1) % 4; bip(990); majPanneau(); }
+  function validerMystere() {
+    if (G.fini || G.attente || G.salle) return;
+    if (!G.choix) { dire("Choisis d'abord la pièce que tu imagines, dans la liste."); bip(180); return; }
+    const bonType = G.choix === G.mys.t, bonSens = formeNorm(formeN(G.choix, G.rotChoix)) === formeNorm(G.mys.cs);
+    const juste = G.niv === 2 ? bonType && bonSens : bonType;
+    if (juste) { G.score++; finManche(`Bravo ! C'était bien le ${PC[G.mys.t].nom} ${NOMS_COUL[G.mys.t]}.`); bip(880); return; }
+    G.essaisPiece++; G.essais++; bip(200);
+    if (G.essaisPiece >= MYS.ESSAIS) return finManche(`C'était le ${PC[G.mys.t].nom} ${NOMS_COUL[G.mys.t]}. On passe à la pièce suivante !`);
+    dire(bonType && !bonSens ? "C'est la bonne pièce, mais pas dans le bon sens ! Tourne-la avec ⟳." : "Non, ce n'est pas celle-là. Fais encore le tour du contour !");
+    majPanneau();
+  }
+  function finManche(txt) {
+    G.revele = true; G.attente = true; dire(txt); majPanneau(); const partie = G.partie;
+    setTimeout(() => {
+      if (!G.ouvert || G.mode !== "pioche" || G.partie !== partie) return;
+      if (G.manche >= MYS.MANCHES) {
+        const n = G.score;
+        return n >= 3 ? gagne(`Tu as retrouvé ${n} pièces mystère sur ${MYS.MANCHES}. Bravo, détective !`) : fin(`Tu as retrouvé ${n} pièce${n > 1 ? "s" : ""} sur ${MYS.MANCHES}. On réessaie ?`, false);
+      }
+      nouvelleMystere(); dire("Nouvelle pièce mystère ! Promène le curseur pour trouver son contour."); majPanneau();
+    }, 2200);
+  }
+  function animMystere() { if (!G.ouvert || G.mode !== "pioche") { G.anim = false; return; } dessine(); requestAnimationFrame(animMystere); }
+  function dessineMystere(g, s) {
+    const now = performance.now();
+    if (G.salle) return dessineSalle(g, s, now);
+    g.fillStyle = "#0B0918"; g.fillRect(0, 0, W * s, H * s);
+    g.strokeStyle = "#221B40"; g.lineWidth = 1;
+    for (let x = 0; x <= W; x++) { g.beginPath(); g.moveTo(x * s + .5, 0); g.lineTo(x * s + .5, H * s); g.stroke(); }
+    for (let y = 0; y <= H; y++) { g.beginPath(); g.moveTo(0, y * s + .5); g.lineTo(W * s, y * s + .5); g.stroke(); }
+    if (G.revele) { G.mys.cs.forEach(([x, y]) => bloc(g, x, y, PC[G.mys.t].coul, 1)); contour(g, G.mys.cs, "#FFFFFF", 3); }
+    // bords découverts : allumés, puis fondu
+    const duree = MYS.FONDU[G.niv], ep = Math.max(3, s * .16);
+    G.traces.forEach((v, k) => {
+      const a = v.fondu === null ? 1 : 1 - (now - v.fondu) / duree; if (a <= 0) { G.traces.delete(k); return; }
+      const [x, y, cote] = k.split(","), px = +x * s, py = +y * s;
+      g.globalAlpha = a; g.fillStyle = "#FFE680"; g.shadowColor = "#FFD23F"; g.shadowBlur = 10;
+      if (cote === "h") g.fillRect(px - ep / 2, py - ep / 2, s + ep, ep);
+      if (cote === "b") g.fillRect(px - ep / 2, py + s - ep / 2, s + ep, ep);
+      if (cote === "g") g.fillRect(px - ep / 2, py - ep / 2, ep, s + ep);
+      if (cote === "d") g.fillRect(px + s - ep / 2, py - ep / 2, ep, s + ep);
+      g.shadowBlur = 0; g.globalAlpha = 1;
+    });
+    dessineCurseur(g, s, now);
+  }
+  function dessineCurseur(g, s, now) {
+    const [x, y] = G.cur, pulse = .75 + .25 * Math.sin(now / 180), m = Math.max(2, s * .12);
+    g.fillStyle = `rgba(60,200,240,${.35 * pulse})`; g.fillRect(x * s + m, y * s + m, s - 2 * m, s - 2 * m);
+    g.strokeStyle = "#3CC8F0"; g.lineWidth = Math.max(2, s * .1); g.strokeRect(x * s + m, y * s + m, s - 2 * m, s - 2 * m);
+  }
+  const PRENOMS = [["Cassian", "#3CC8F0"], ["Ezra", "#F7D51D"], ["Maël", "#7AB536"], ["William", "#EE6FB5"]];
+  function dessineSalle(g, s, now) {
+    g.fillStyle = "#170F2E"; g.fillRect(0, 0, W * s, H * s);
+    for (let i = 0; i < 40; i++) {                          // étoiles qui scintillent
+      const sx = (i * 97 % 100) / 100 * W * s, sy = (i * 61 % 100) / 100 * H * s, a = .3 + .7 * Math.abs(Math.sin(now / 500 + i));
+      g.fillStyle = `rgba(255,255,255,${a})`; g.fillRect(Math.round(sx), Math.round(sy), 2, 2);
+    }
+    const mur = Math.max(4, s * .22);                        // murs de la salle, avec une porte en haut à gauche
+    g.fillStyle = "#AE96D4";
+    g.fillRect(0, 0, W * s, mur); g.fillRect(W * s - mur, 0, mur, H * s); g.fillRect(0, H * s - mur, W * s, mur); g.fillRect(0, s, mur, H * s - s);
+    if (Math.floor(now / 400) % 2 === 0) {                   // petite flèche qui clignote devant la porte
+      g.fillStyle = "#FFD23F"; g.beginPath(); const cy = s / 2 + mur / 2, cx = mur + 2;
+      g.moveTo(cx, cy); g.lineTo(cx + s * .45, cy - s * .3); g.lineTo(cx + s * .45, cy + s * .3); g.closePath(); g.fill();
+    }
+    g.font = `${Math.max(8, Math.round(s * .3))}px "Press Start 2P", monospace`; g.textBaseline = "top"; g.fillStyle = "#FFD23F";
+    g.fillText("SORTIE", mur + 4, s + 6);
+    g.textAlign = "center"; g.textBaseline = "middle";
+    g.font = `${Math.max(9, Math.round(s * .42))}px "Press Start 2P", monospace`; g.fillStyle = "#FFFFFF";
+    g.fillText("SALLE SECRÈTE", W * s / 2, 3.5 * s);
+    PRENOMS.forEach(([n, c], i) => {
+      const y = (6.5 + i * 2.2) * s, saut = Math.sin(now / 300 + i) * s * .08;
+      g.font = `${Math.max(12, Math.round(s * .72))}px "Press Start 2P", monospace`;
+      g.fillStyle = "#0B0918"; g.fillText(n, W * s / 2 + 3, y + 3 + saut); g.fillStyle = c; g.fillText(n, W * s / 2, y + saut);
+    });
+    g.font = `${Math.max(8, Math.round(s * .34))}px "Press Start 2P", monospace`; g.fillStyle = "#F4F0FF";
+    g.fillText("Merci d'avoir joué", W * s / 2, 16 * s); g.fillText("à notre jeu !", W * s / 2, 17 * s);
+    g.textAlign = "left";
+    dessineCurseur(g, s, now);
   }
 
   // ---------------- joystick virtuel : il apparaît là où le doigt se pose, n'importe où sur la zone du plateau ----------------
@@ -1345,7 +1481,7 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
   window.addEventListener("resize", () => { if (G.ouvert) dimensionne(); });
   if (window.ResizeObserver) new ResizeObserver(() => { if (G.ouvert) dimensionne(); }).observe(elJ("j-zone-plateau"));
   brancheCanvas(); brancheCommandes();
-  window.__jeu = { G, STICK, poser, valider, deplace, tourner, centreSur, ouvreJeu, nouvellePartie, devine, ancre, casesDe };
+  window.__jeu = { G, STICK, poser, valider, deplace, tourner, centreSur, ouvreJeu, nouvellePartie, choisirMystere, validerMystere, bougeCurseur, ancre, casesDe };
 
   return ouvreJeu;
   })();
