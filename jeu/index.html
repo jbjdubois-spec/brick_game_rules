@@ -494,6 +494,10 @@ button.j-action.change:hover { background: #6FD8F5; } button.j-action.stop:hover
 button.j-action:active { transform: translateY(3px); box-shadow: 0 2px 0 #333; }
 button.j-action:disabled { filter: grayscale(.9); opacity: .5; }
 @media (max-width: 760px) { #j-pieces button.j-action { width: calc(100% - 6px); } }
+
+/* la colonne de pièces défile au doigt ; un appui sans glisser choisit la pièce */
+#j-pieces { touch-action: pan-x pan-y; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+#j-pieces .j-piece, #j-pieces .j-action { touch-action: pan-x pan-y; }
 </style>
 <style>body{margin:0}[hidden]{display:none!important}</style>
 </head>
@@ -1360,7 +1364,8 @@ button.j-action:disabled { filter: grayscale(.9); opacity: .5; }
         `<button class="j-piece" data-t="${k}" aria-pressed="${G.sel === k}" ${G.stock[k] ? "" : "disabled"} aria-label="Pièce ${PC[k].nom}, ${G.stock[k]} restante${G.stock[k] > 1 ? "s" : ""}">${miniSVG(k, 12, G.sel === k ? G.rot : 0)}<span>${G.stock[k]}</span></button>`).join("");
     }
     p.innerHTML = html;
-    p.querySelectorAll(".j-piece").forEach(b => b.addEventListener("pointerdown", e => { choisir(b.dataset.t); demarreGlisse(e); }));
+    // un appui choisit la pièce, un glissement fait défiler la colonne : le navigateur n'envoie « click » que si le doigt n'a pas glissé
+    p.querySelectorAll(".j-piece[data-t]").forEach(b => b.addEventListener("click", () => choisir(b.dataset.t)));
     p.querySelectorAll(".j-offre").forEach(b => b.addEventListener("click", () => choisirOffre(+b.dataset.i)));
     p.querySelectorAll(".j-mys").forEach(b => b.addEventListener("click", () => choisirMystere(b.dataset.k)));
     // informations propres au mode
