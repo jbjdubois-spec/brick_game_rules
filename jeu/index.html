@@ -218,6 +218,20 @@ footer { color: var(--muted); font-size: 18px; text-align: center; }
 .glisse { display: none !important; }
 @media (max-width: 700px) { .lancer button.jouer { font-size: 14px; padding: 20px 10px; } }
 @media (max-width: 700px) { .cartouche { padding: 16px 12px; } .c-niv { gap: 2px; } .c-niv button { margin: 4px 1px !important; overflow: visible !important; padding: 10px 0 !important; } .c-niv .lib { font-size: 15px; letter-spacing: -1px; white-space: nowrap; } }
+
+/* écran de départ : Solo ou Multijoueur */
+.choix-groupe { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.groupe { display: grid; justify-items: center; align-content: center; gap: 12px; padding: 28px 12px; min-height: 220px; margin: 4px; touch-action: manipulation; }
+.groupe .ico-g { height: 64px; width: auto; }
+.groupe.solo { color: var(--cyan); } .groupe.multi { color: var(--pink); }
+.groupe .g-nom { font-family: var(--pixel); font-size: 16px; color: var(--ink); }
+.groupe .g-desc { font-family: var(--body); font-size: 21px; color: var(--muted); }
+#ecran-jeux { display: grid; gap: 18px; }
+#ecran-jeux[hidden] { display: none; }
+.barre-groupe { display: flex; align-items: center; gap: 12px; }
+.retour-groupe { font-size: 10px; padding: 10px 12px; min-height: 40px; }
+#nom-groupe { font-family: var(--pixel); font-size: 11px; color: var(--gold); }
+@media (max-width: 700px) { .choix-groupe { grid-template-columns: 1fr; } .groupe { min-height: 170px; } .groupe .g-nom { font-size: 18px; } }
 /* ===== le jeu jouable : écran plein, plateau à gauche, pièces à droite (en dessous sur téléphone) ===== */
 #jeu { position: fixed; inset: 0; z-index: 50; background: var(--bg); display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; user-select: none; -webkit-user-select: none;
   gap: 8px; padding: max(8px, env(safe-area-inset-top)) 12px max(8px, env(safe-area-inset-bottom));
@@ -484,6 +498,13 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
     <div class="astuce">clic = saut !</div>
   </div>
 
+  <section class="choix-groupe" id="choix-groupe" aria-label="Choisis comment tu joues">
+    <button class="groupe solo" data-g="solo"><svg class="ico-g" viewBox="0 0 8 11" aria-hidden="true" fill="currentColor" shape-rendering="crispEdges"><rect x="3" y="1" width="1" height="1"/><rect x="4" y="1" width="1" height="1"/><rect x="2" y="2" width="1" height="1"/><rect x="3" y="2" width="1" height="1"/><rect x="4" y="2" width="1" height="1"/><rect x="5" y="2" width="1" height="1"/><rect x="3" y="3" width="1" height="1"/><rect x="4" y="3" width="1" height="1"/><rect x="1" y="5" width="1" height="1"/><rect x="2" y="5" width="1" height="1"/><rect x="3" y="5" width="1" height="1"/><rect x="4" y="5" width="1" height="1"/><rect x="5" y="5" width="1" height="1"/><rect x="6" y="5" width="1" height="1"/><rect x="1" y="6" width="1" height="1"/><rect x="2" y="6" width="1" height="1"/><rect x="3" y="6" width="1" height="1"/><rect x="4" y="6" width="1" height="1"/><rect x="5" y="6" width="1" height="1"/><rect x="6" y="6" width="1" height="1"/><rect x="1" y="7" width="1" height="1"/><rect x="2" y="7" width="1" height="1"/><rect x="3" y="7" width="1" height="1"/><rect x="4" y="7" width="1" height="1"/><rect x="5" y="7" width="1" height="1"/><rect x="6" y="7" width="1" height="1"/><rect x="2" y="8" width="1" height="1"/><rect x="2" y="9" width="1" height="1"/><rect x="5" y="8" width="1" height="1"/><rect x="5" y="9" width="1" height="1"/></svg><span class="g-nom">SOLO</span><span class="g-desc">1 joueur · 4 jeux</span></button>
+    <button class="groupe multi" data-g="multi"><svg class="ico-g" viewBox="0 0 16 11" aria-hidden="true" fill="currentColor" shape-rendering="crispEdges"><rect x="3" y="1" width="1" height="1"/><rect x="4" y="1" width="1" height="1"/><rect x="2" y="2" width="1" height="1"/><rect x="3" y="2" width="1" height="1"/><rect x="4" y="2" width="1" height="1"/><rect x="5" y="2" width="1" height="1"/><rect x="3" y="3" width="1" height="1"/><rect x="4" y="3" width="1" height="1"/><rect x="1" y="5" width="1" height="1"/><rect x="2" y="5" width="1" height="1"/><rect x="3" y="5" width="1" height="1"/><rect x="4" y="5" width="1" height="1"/><rect x="5" y="5" width="1" height="1"/><rect x="6" y="5" width="1" height="1"/><rect x="1" y="6" width="1" height="1"/><rect x="2" y="6" width="1" height="1"/><rect x="3" y="6" width="1" height="1"/><rect x="4" y="6" width="1" height="1"/><rect x="5" y="6" width="1" height="1"/><rect x="6" y="6" width="1" height="1"/><rect x="1" y="7" width="1" height="1"/><rect x="2" y="7" width="1" height="1"/><rect x="3" y="7" width="1" height="1"/><rect x="4" y="7" width="1" height="1"/><rect x="5" y="7" width="1" height="1"/><rect x="6" y="7" width="1" height="1"/><rect x="2" y="8" width="1" height="1"/><rect x="2" y="9" width="1" height="1"/><rect x="5" y="8" width="1" height="1"/><rect x="5" y="9" width="1" height="1"/><rect x="11" y="1" width="1" height="1"/><rect x="12" y="1" width="1" height="1"/><rect x="10" y="2" width="1" height="1"/><rect x="11" y="2" width="1" height="1"/><rect x="12" y="2" width="1" height="1"/><rect x="13" y="2" width="1" height="1"/><rect x="11" y="3" width="1" height="1"/><rect x="12" y="3" width="1" height="1"/><rect x="9" y="5" width="1" height="1"/><rect x="10" y="5" width="1" height="1"/><rect x="11" y="5" width="1" height="1"/><rect x="12" y="5" width="1" height="1"/><rect x="13" y="5" width="1" height="1"/><rect x="14" y="5" width="1" height="1"/><rect x="9" y="6" width="1" height="1"/><rect x="10" y="6" width="1" height="1"/><rect x="11" y="6" width="1" height="1"/><rect x="12" y="6" width="1" height="1"/><rect x="13" y="6" width="1" height="1"/><rect x="14" y="6" width="1" height="1"/><rect x="9" y="7" width="1" height="1"/><rect x="10" y="7" width="1" height="1"/><rect x="11" y="7" width="1" height="1"/><rect x="12" y="7" width="1" height="1"/><rect x="13" y="7" width="1" height="1"/><rect x="14" y="7" width="1" height="1"/><rect x="10" y="8" width="1" height="1"/><rect x="10" y="9" width="1" height="1"/><rect x="13" y="8" width="1" height="1"/><rect x="13" y="9" width="1" height="1"/></svg><span class="g-nom">MULTIJOUEUR</span><span class="g-desc">2 joueurs · Lignes à deux, Duel</span></button>
+  </section>
+
+  <div id="ecran-jeux" hidden>
+  <div class="barre-groupe"><button id="retour-groupe" class="retour-groupe" aria-label="Revenir au choix Solo ou Multijoueur">◀ Changer</button><span id="nom-groupe"></span></div>
   <section class="etape" aria-label="Choisis ton jeu et ton niveau">
     <div class="jeux" id="jeux"></div>
     <div class="points" id="points" aria-hidden="true"></div>
@@ -504,6 +525,8 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
     <div class="zoom" id="zoom"></div>
     <div class="galerie" id="galerie"></div>
   </section>
+
+  </div>
 
 <div id="jeu" hidden role="dialog" aria-modal="true" aria-labelledby="j-titre">
   <div class="j-haut">
@@ -622,6 +645,18 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
       ] },
   ];
   const LIB_NIV = ["Facile", "Moyen", "Difficile"];
+  JEUX.push({ id: "duel", nom: "Le duel", c: "#FF5EA8", piece: [[0,0],[1,0],[1,1],[2,1]], but: "Face à face : le premier à 3 lignes dans sa moitié gagne.",
+    apprend: "jouer chacun son tour, anticiper, construire une stratégie.",
+    niveaux: [
+      { objectif: "Face à face, le téléphone posé à plat entre vous. Chacun a sa moitié du plateau. À ton tour, choisis une pièce parmi 3 et pose-la dans ta moitié.", pieces: "2 joueurs, 3 pièces au choix à chaque tour",
+        etapes: ["Posez le téléphone à plat entre vous deux : joueur 1 en bas, joueur 2 en haut.", "À ton tour, les commandes viennent de ton côté. Choisis une des 3 pièces proposées.", "Déplace-la et tourne-la : elle glisse vers ton bord. Pose-la avec ✔.", "Remplis des lignes entières dans ta moitié."],
+        reussi: "Le premier qui complète 3 lignes dans sa moitié gagne.", adulte: "Une ligne compte seulement quand ses 10 cases sont remplies : regardez ensemble les trous à boucher." },
+      { objectif: "Même duel, mais seulement 2 pièces au choix à chaque tour : réfléchis bien avant de choisir !", pieces: "2 joueurs, 2 pièces au choix à chaque tour",
+        etapes: ["Regarde les 2 pièces proposées.", "Choisis celle qui bouche le mieux tes trous.", "Pose-la : le premier à 3 lignes gagne."],
+        reussi: "Le premier qui complète 3 lignes dans sa moitié gagne.", adulte: "Demandez pourquoi cette pièce plutôt que l'autre : on apprend à justifier son choix." },
+      { objectif: "Cadeau empoisonné : c'est ton adversaire qui choisit, parmi 3, la pièce que tu vas devoir poser !", pieces: "2 joueurs, l'adversaire choisit ta pièce parmi 3",
+        etapes: ["L'adversaire regarde ta moitié et te donne une pièce parmi 3.", "Les commandes reviennent vers toi : place-la au mieux.", "Puis c'est toi qui choisis la pièce de l'autre."],
+        reussi: "Le premier qui complète 3 lignes dans sa moitié gagne.", adulte: "Parlez stratégie : quelle pièce gênera le plus l'autre ? Et laquelle l'aiderait ?" } ] });
   Object.assign(JEUX.find(j => j.id === "pioche"), { nom: "La pièce mystère", but: "Retrouver une pièce cachée en suivant son contour.",
     apprend: "se repérer case par case, mémoriser une forme, imaginer ce qu'on ne voit pas.",
     niveaux: [
@@ -651,41 +686,48 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
   const mobile = () => matchMedia("(max-width: 700px)").matches;
   const doux = () => matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
   function centrerJeu() {
-    const c = $("jeux"), b = c.children[jeu]; if (!b || !mobile()) return;
+    const c = $("jeux"), b = [...c.children].find(k => +k.dataset.i === jeu); if (!b || !mobile()) return;
     c.scrollTo({ left: b.offsetLeft - (c.clientWidth - b.clientWidth) / 2, behavior: doux() });
   }
   const DESC_NIV = ["Pour découvrir", "Un peu plus de défi", "Pour les champions"];
+  const GROUPES = { solo: ["puzzle", "copie", "pioche", "images"], multi: ["lignes", "duel"] };
+  let groupe = null, defileBranche = false;
+  const listeJeux = () => JEUX.map((j, i) => i).filter(i => !groupe || GROUPES[groupe].includes(JEUX[i].id));
+  function prochainJeu(j) { const l = listeJeux(); return l[(l.indexOf(j) + 1) % l.length]; }
   function rendJeux() {
     const c = $("jeux");
-    if (!c.children.length) {
-      c.innerHTML = JEUX.map((j, i) => `<div class="cartouche" style="--c:${j.c}" data-i="${i}" role="group" aria-label="${j.nom}">
+    if (c.dataset.groupe !== String(groupe)) {
+      c.dataset.groupe = String(groupe);
+      c.innerHTML = listeJeux().map((i, pos) => { const j = JEUX[i]; return `<div class="cartouche" style="--c:${j.c}" data-i="${i}" role="group" aria-label="${j.nom}">
         <span class="bande" aria-hidden="true"></span>
-        <span class="tete"><span class="nom">${i + 1}. ${j.nom}</span>${icone(j.piece, j.c, 9)}</span>
+        <span class="tete"><span class="nom">${pos + 1}. ${j.nom}</span>${icone(j.piece, j.c, 9)}</span>
         <span class="but">${j.but}</span>
-        <span class="c-niv">${LIB_NIV.map((l, n) => `<button data-i="${i}" data-n="${n}" title="${DESC_NIV[n]}"><span class="st">${"★".repeat(n + 1)}${"☆".repeat(2 - n)}</span><span class="lib">${l}</span><span class="ok" aria-hidden="true"></span></button>`).join("")}</span></div>`).join("");
+        <span class="c-niv">${LIB_NIV.map((l, n) => `<button data-i="${i}" data-n="${n}" title="${DESC_NIV[n]}"><span class="st">${"★".repeat(n + 1)}${"☆".repeat(2 - n)}</span><span class="lib">${l}</span><span class="ok" aria-hidden="true"></span></button>`).join("")}</span></div>`; }).join("");
       c.querySelectorAll(".c-niv button").forEach(b => b.addEventListener("click", e => { e.stopPropagation(); jeu = +b.dataset.i; niv = +b.dataset.n; bip(880); maj(false); }));
       c.querySelectorAll(".cartouche").forEach(k => k.addEventListener("click", () => { const i = +k.dataset.i; if (i !== jeu) { jeu = i; bip(660); maj(false); } }));
-      // sur mobile : la carte arrêtée au centre du carrousel devient le jeu choisi, et les règles changent avec elle
-      let attente = null;
-      c.addEventListener("scroll", () => {
-        if (!mobile()) return;
-        clearTimeout(attente);
-        attente = setTimeout(() => {
-          const milieu = c.scrollLeft + c.clientWidth / 2;
-          let best = 0, d = 1e9;
-          [...c.children].forEach((b, i) => { const m = Math.abs(b.offsetLeft + b.clientWidth / 2 - milieu); if (m < d) { d = m; best = i; } });
-          if (best !== jeu) { jeu = best; bip(660); rendJeux(); rendMission(false); rendGalerie(); }
-        }, 140);
-      }, { passive: true });
+      if (!defileBranche) { defileBranche = true; let attente = null;
+        c.addEventListener("scroll", () => {            // sur mobile : la carte arrêtée au centre devient le jeu choisi
+          if (!mobile()) return; clearTimeout(attente);
+          attente = setTimeout(() => {
+            const milieu = c.scrollLeft + c.clientWidth / 2; let best = null, d = 1e9;
+            [...c.children].forEach(b => { const m = Math.abs(b.offsetLeft + b.clientWidth / 2 - milieu); if (m < d) { d = m; best = +b.dataset.i; } });
+            if (best !== null && best !== jeu) { jeu = best; bip(660); rendJeux(); rendMission(false); rendGalerie(); }
+          }, 140);
+        }, { passive: true }); }
     }
-    [...c.children].forEach((k, i) => {
+    [...c.children].forEach(k => { const i = +k.dataset.i;
       k.setAttribute("aria-current", String(i === jeu));
       k.querySelectorAll(".c-niv button").forEach(b => { const n = +b.dataset.n, gagne = etoiles[JEUX[i].id + n];
         b.setAttribute("aria-pressed", String(i === jeu && n === niv));
         b.querySelector(".ok").textContent = gagne ? "✔" : "";
         b.setAttribute("aria-label", `${JEUX[i].nom}, niveau ${LIB_NIV[n]}${gagne ? ", déjà réussi" : ""}`); });
     });
-    $("points").innerHTML = JEUX.map((j, i) => `<span style="--c:${j.c}" class="${i === jeu ? "on" : ""}"></span>`).join("");
+    $("points").innerHTML = [...c.children].map(k => `<span style="--c:${JEUX[+k.dataset.i].c}" class="${+k.dataset.i === jeu ? "on" : ""}"></span>`).join("");
+  }
+  function choisirGroupe(g) {
+    groupe = g; $("choix-groupe").hidden = !!g; $("ecran-jeux").hidden = !g;
+    if (g) { if (!listeJeux().includes(jeu)) { jeu = listeJeux()[0]; niv = 0; } $("nom-groupe").textContent = g === "solo" ? "SOLO · 1 joueur" : "MULTIJOUEUR · 2 joueurs"; bip(880); }
+    maj(false); window.scrollTo(0, 0);
   }
   function rendNiveaux() {}
   function rendMission(defile) {
@@ -939,7 +981,9 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
   if (document.fonts) document.fonts.ready.then(() => dessine());
 
   $("jouer").addEventListener("click", () => ouvreJeu());
-  $("hasard").addEventListener("click", () => { let j2, n2; do { j2 = Math.floor(Math.random() * 5); n2 = Math.floor(Math.random() * 3); } while (j2 === jeu && n2 === niv);
+  document.querySelectorAll("#choix-groupe .groupe").forEach(b => b.addEventListener("click", () => choisirGroupe(b.dataset.g)));
+  $("retour-groupe").addEventListener("click", () => { bip(520); choisirGroupe(null); });
+  $("hasard").addEventListener("click", () => { let j2, n2; const l = listeJeux(); do { j2 = l[Math.floor(Math.random() * l.length)]; n2 = Math.floor(Math.random() * 3); } while (j2 === jeu && n2 === niv);
     jeu = j2; niv = n2; bip(520); maj(false); });
   const ouvreJeu = (() => {   // module du jeu, isolé du reste de la page
   // =====================================================================
@@ -1101,6 +1145,11 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
       if (n === 0) { G.stock = stockTous(false); G.but = 3; } else { G.sac = tirerSac(); G.courante = G.sac.shift(); G.but = n === 1 ? 5 : 10; }
       OBJ.txt = `Chacun son tour, remplissez le plateau par le bas. Objectif : ${G.but} lignes complètes.` + (n === 2 ? " Avant de poser, annonce ta place : vise, puis valide." : "");
     }
+    if (m === "duel") {
+      G.lignesJ = [0, 0]; G.nbOffre = n === 1 ? 2 : 3; nouveauTourDuel(true);
+      OBJ.txt = n === 2 ? "Duel : c'est ton adversaire qui choisit ta pièce ! Le premier à 3 lignes dans sa moitié gagne."
+                        : `Duel face à face : choisis une pièce parmi ${G.nbOffre} et pose-la dans ta moitié. Le premier à 3 lignes gagne.`;
+    }
     if (m === "images") {
       if (n < 2) {
         G.image = IMAGES[imageChoisie]; const ox = Math.floor((10 - G.image.w) / 2), oy = 20 - G.image.h;
@@ -1110,6 +1159,7 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
         OBJ.txt = n === 0 ? `Reconstruis « ${G.image.nom} » : chaque pièce à sa place, de la même couleur.` : `Remplis la silhouette « ${G.image.nom} » avec les pièces proposées.`;
       } else { G.stock = stockTous(true); OBJ.txt = "Invente ton image avec toutes les pièces, puis appuie sur « J'ai fini »."; }
     }
+    if (m === "duel") return;            // le duel a déjà choisi ses pièces et son message
     choisirPremier();
     dire(m === "pioche" ? "Déplace le curseur avec le joystick. Quand il touche la pièce cachée, son bord s’allume." :
       "Déplace la pièce avec le joystick, tourne-la avec ⟳, puis appuie sur ✔ POSER.");
@@ -1122,6 +1172,7 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
   // après chaque pose : avance du mode, victoire
   function apresPose(p) {
     const m = G.mode;
+    if (m === "duel") return apresDuel();
     if (G.courante) {                         // pièce tirée au hasard : on passe à la suivante
       G.courante = G.sac.length ? G.sac.shift() : null; G.devine = false; G.rotMystere = Math.floor(Math.random() * 4);
       G.sel = G.courante; G.rot = 0;
@@ -1238,6 +1289,12 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
     }
     // pièces posées
     G.poses.forEach(p => { p.cs.forEach(([x, y]) => bloc(g, x, y, PC[p.t].coul, 1, PC[p.t].brille)); contour(g, p.cs, "#0B0918", 2); });
+    if (G.mode === "duel") {   // deux moitiés : joueur 2 en haut (rose), joueur 1 en bas (bleu)
+      g.fillStyle = "rgba(255,94,168,.07)"; g.fillRect(0, 0, W * s, H / 2 * s);
+      g.fillStyle = "rgba(60,200,240,.07)"; g.fillRect(0, H / 2 * s, W * s, H / 2 * s);
+      g.fillStyle = "#FFD23F"; g.fillRect(0, H / 2 * s - 2, W * s, 4);
+      G.grille.forEach((l, y) => { if (l.every(Boolean)) { g.strokeStyle = y < H / 2 ? "#FF5EA8" : "#3CC8F0"; g.lineWidth = 3; g.strokeRect(1.5, y * s + 1.5, W * s - 3, s - 3); } });
+    }
     // lignes complètes (mode lignes)
     if (G.mode === "lignes") G.grille.forEach((l, y) => { if (l.every(Boolean)) { g.strokeStyle = "#FFD23F"; g.lineWidth = 3; g.strokeRect(1.5, y * s + 1.5, W * s - 3, s - 3); } });
     // pièce en main, en transparence : on voit à travers les pièces déjà posées
@@ -1249,7 +1306,7 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
       if (pb) g.setLineDash([5, 3]); contour(g, cs, pb ? "#FF7070" : "#FFFFFF", 3); g.setLineDash([]);
     }
   }
-  function pretAPoser() { return G.mode !== "pioche"; }
+  function pretAPoser() { return G.mode !== "pioche" && !(G.mode === "duel" && G.phase === "offre"); }
 
   // ---------------- panneau (pièces, actions) ----------------
   const miniSVG = (t, s, r) => { const c = tourneP(PC[t].c, r || 0), mx = Math.min(...c.map(p => p[0])), my = Math.min(...c.map(p => p[1]));
@@ -1260,8 +1317,9 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
     if (!G.ouvert) return;
     const m = G.mode, p = elJ("j-pieces"), info = elJ("j-info");
     // lignes à deux sur téléphone posé à plat : les commandes passent du côté du joueur dont c'est le tour, retournées pour lui
-    const face = m === "lignes" && matchMedia("(max-width: 760px)").matches;
-    elJ("jeu").classList.toggle("face", face); elJ("jeu").classList.toggle("j2", face && G.tour % 2 === 1);
+    const face = m === "duel" && matchMedia("(max-width: 760px)").matches, agit = joueurQuiAgit();
+    elJ("jeu").classList.toggle("face", face); elJ("jeu").classList.toggle("j2", face && agit === 1);
+    elJ("jeu").classList.toggle("duel-j2", m === "duel" && agit === 1);
     elJ("j-titre").textContent = `${JEUX[jeu].nom} · ${"★".repeat(niv + 1)}${"☆".repeat(2 - niv)}`;
     elJ("j-obj").textContent = OBJ.txt;
     // pièces disponibles
@@ -1271,6 +1329,10 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
       avantInfo = `<p class="j-aide">${G.salle ? "Salle secrète ! Sors par la porte en haut à gauche." : G.niv === 2 ? "Quelle pièce est cachée, et dans quel sens ? Choisis-la puis tourne-la avec ⟳." : "Quelle pièce est cachée ? Choisis-la dans la colonne."}</p>
         <p class="j-score">Pièce ${Math.min(G.manche, MYS.MANCHES)} / ${MYS.MANCHES} · trouvées : ${G.score}${G.essaisPiece ? ` · essais ratés : ${G.essaisPiece} / ${MYS.ESSAIS}` : ""}</p>`;
       html = TYPES7.map(k => `<button class="j-piece j-mys" data-k="${k}" aria-pressed="${G.choix === k}" aria-label="Pièce ${k}" ${G.attente || G.salle ? "disabled" : ""}>${miniSVG(k, 12, G.niv === 2 && G.choix === k ? G.rotChoix : 0)}<span>${k}</span></button>`).join("");
+    } else if (m === "duel") {
+      const choisit = G.phase === "offre";
+      html = G.offre.map((t, i) => `<button class="j-piece j-offre" data-i="${i}" aria-pressed="${choisit ? G.choixOffre === i : G.sel === t && G.iOffre === i}" ${(G.niv === 2 && !choisit) && G.iOffre !== i ? "disabled" : ""} aria-label="Pièce ${PC[t].nom}">${miniSVG(t, 12, !choisit && G.iOffre === i ? G.rot : 0)}<span>${choisit ? "donner" : "choisir"}</span></button>`).join("");
+      avantInfo = `<p class="j-score">Joueur 1 : <b>${G.lignesJ[0]}</b> / 3 lignes · Joueur 2 : <b>${G.lignesJ[1]}</b> / 3 lignes</p>`;
     } else if (G.courante) {
       const t = G.courante;
       html = `<div class="j-piece j-tiree" aria-label="Pièce tirée au hasard : ${PC[t].nom}">${miniSVG(t, 12, G.rot)}<span>tirée</span></div>`;
@@ -1282,6 +1344,7 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
     }
     p.innerHTML = html;
     p.querySelectorAll(".j-piece").forEach(b => b.addEventListener("pointerdown", e => { choisir(b.dataset.t); demarreGlisse(e); }));
+    p.querySelectorAll(".j-offre").forEach(b => b.addEventListener("click", () => choisirOffre(+b.dataset.i)));
     p.querySelectorAll(".j-mys").forEach(b => b.addEventListener("click", () => choisirMystere(b.dataset.k)));
     // informations propres au mode
     let inf = "";
@@ -1301,9 +1364,9 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
     const fi = elJ("j-fini"); if (fi) fi.addEventListener("click", () => G.poses.length ? gagne(`Ton image a ${G.poses.length} pièces. Raconte-la ou fais-la deviner !`) : dire("Pose d'abord quelques pièces !"));
     const st = elJ("j-stop"); if (st) st.addEventListener("click", () => { const trous = [...G.zone].filter(k => { const [x, y] = k.split(",").map(Number); return !G.grille[y][x]; }).length; fin(`Tu t'arrêtes avec ${trous} cases vides.`, trous <= 8); });
     elJ("j-tourner").disabled = m === "pioche" ? (G.niv !== 2 || !G.choix || G.fini || G.attente || G.salle) : (!G.sel || G.fini);
-    elJ("j-poser").innerHTML = m === "pioche" ? "✔<span>VALIDER</span>" : "✔<span>POSER</span>";
-    elJ("j-poser").disabled = G.fini || (m !== "pioche" && !G.sel) || (m === "pioche" && (G.attente || G.salle));
-    elJ("j-annuler").disabled = !G.historique.length || G.fini;
+    elJ("j-poser").innerHTML = m === "pioche" || (m === "duel" && G.phase === "offre") ? "✔<span>VALIDER</span>" : "✔<span>POSER</span>";
+    elJ("j-poser").disabled = G.fini || (m !== "pioche" && m !== "duel" && !G.sel) || (m === "pioche" && (G.attente || G.salle));
+    elJ("j-annuler").disabled = !G.historique.length || G.fini || m === "duel";
   }
   // listes de pièces qui défilent de côté : une flèche clignote du côté où il en reste à voir
   function majDefile() {
@@ -1341,17 +1404,23 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
   const casesMain = () => (G.sel && G.pos) ? formeN(G.sel, G.rot).map(([a, b]) => [G.pos[0] + a, G.pos[1] + b]) : [];
   const finOuverte = () => !elJ("j-fin").hidden;
   function pieceActive() { return G.ouvert && G.sel && !G.fini && pretAPoser() && !finOuverte(); }
-  function chuteA(x) {   // jeu des lignes : la pièce descend tout droit depuis le haut et s'arrête sur le fond ou sur une pièce
-    const f = formeN(G.sel, G.rot), [, h] = taille(f), vide = yy => f.every(([a, b]) => !G.grille[yy + b][x + a]);
-    if (!vide(0)) return 0; let y = 0; while (y + h < H && vide(y + 1)) y++; return y;
+  const gravite = () => G.mode === "lignes" || G.mode === "duel";
+  function chuteA(x) {   // la pièce tombe tout droit et s'arrête sur le bord ou sur une pièce
+    const f = formeN(G.sel, G.rot), [, h] = taille(f), vide = yy => yy >= 0 && yy + h <= H && f.every(([a, b]) => !G.grille[yy + b][x + a]);
+    if (G.mode === "duel" && G.tour % 2 === 1) {      // duel, joueur 2 (en haut) : la pièce « tombe » vers le haut, depuis le milieu
+      const y0 = H / 2 - h; if (!vide(y0)) return y0; let y = y0; while (vide(y - 1)) y--; return y;
+    }
+    const y0 = G.mode === "duel" ? H / 2 : 0;         // duel, joueur 1 : depuis le milieu vers le bas
+    if (!vide(y0)) return y0; let y = y0; while (vide(y + 1)) y++; return y;
   }
   function borne() {     // la pièce reste toujours entière sur le plateau
     if (!G.sel || !G.pos) return; const [w, h] = taille(formeN(G.sel, G.rot));
     G.pos = [Math.max(0, Math.min(W - w, G.pos[0])), Math.max(0, Math.min(H - h, G.pos[1]))];
-    if (G.mode === "lignes") G.pos[1] = chuteA(G.pos[0]);
+    if (gravite()) G.pos[1] = chuteA(G.pos[0]);
   }
   function posDefaut() {
     if (G.mode === "lignes") return [4, 0];
+    if (G.mode === "duel") return [4, G.tour % 2 ? 9 : 10];
     if (G.zone && G.zone.size) { const ks = [...G.zone].map(k => k.split(",").map(Number));
       return [Math.floor((Math.min(...ks.map(p => p[0])) + Math.max(...ks.map(p => p[0]))) / 2), Math.min(...ks.map(p => p[1])) + 1]; }
     return [4, 4];
@@ -1361,8 +1430,8 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
     const f = formeN(G.sel, G.rot), [w, h] = taille(f), [cx, cy] = posDefaut();
     let mieux = null, dm = 1e9;
     for (let y = 0; y <= H - h; y++) for (let x = 0; x <= W - w; x++) {
-      if (G.mode === "lignes" && y > 0) break;
-      const yy = G.mode === "lignes" ? chuteA(x) : y, cs = f.map(([a, b]) => [x + a, yy + b]);
+      if (gravite() && y > 0) break;
+      const yy = gravite() ? chuteA(x) : y, cs = f.map(([a, b]) => [x + a, yy + b]);
       if (raisonInvalide(G.sel, cs)) continue;
       const d = Math.abs(x + (w - 1) / 2 - cx) + 1.01 * Math.abs(yy + (h - 1) / 2 - cy); if (d < dm) { dm = d; mieux = [x, yy]; }
     }
@@ -1395,6 +1464,7 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
   function valider() {
     if (!G.ouvert || G.fini || finOuverte()) return;
     if (G.mode === "pioche") return validerMystere();
+    if (G.mode === "duel" && G.phase === "offre") return choisirOffre(G.choixOffre || 0);
     if (!G.sel) { dire("Choisis d'abord une pièce."); return; }
     if (!G.pos) prendEnMain();
     const cs = casesMain(), pb = raisonInvalide(G.sel, cs);
@@ -1403,6 +1473,9 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
   }
   function pieceSuivante(d) {
     if (G.mode === "pioche") { const i = TYPES7.indexOf(G.choix); return choisirMystere(TYPES7[(i + d + 7) % 7]); }
+    if (G.mode === "duel") { if (G.fini || finOuverte()) return; const n = G.offre.length;
+      if (G.phase === "offre") { G.choixOffre = ((G.choixOffre || 0) + d + n) % n; bip(820); majPanneau(); return; }
+      if (G.niv === 2) return; return choisirOffre(((G.iOffre || 0) + d + n) % n); }
     if (G.courante || G.fini || finOuverte()) return; const dispo = Object.keys(PC).filter(k => G.stock[k] > 0); if (!dispo.length) return;
     const i = dispo.indexOf(G.sel); choisir(dispo[(i + d + dispo.length) % dispo.length]);
   }
@@ -1540,6 +1613,41 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
     dessineCurseur(g, s, now);
   }
 
+  // =====================================================================
+  //  JEU 6 · LE DUEL : téléphone à plat entre deux joueurs face à face.
+  //  Joueur 1 : moitié du bas (sa pièce tombe vers le bas). Joueur 2 : moitié du haut (sa pièce tombe vers le haut).
+  //  Chacun son tour, on choisit une pièce parmi 3 (ou 2) et on la pose dans sa moitié. Premier à 3 lignes = gagné.
+  //  Niveau 3 : c'est l'adversaire qui choisit la pièce que tu dois poser.
+  // =====================================================================
+  const joueurQuiAgit = () => G.mode === "duel" && G.phase === "offre" ? 1 - G.tour % 2 : G.tour % 2;
+  function nouveauTourDuel(debut) {
+    const j = G.tour % 2;
+    G.zone = j === 0 ? rect(0, H / 2, W, H / 2) : rect(0, 0, W, H / 2);
+    G.offre = []; while (G.offre.length < G.nbOffre) { const t = TYPES7[Math.floor(Math.random() * 7)]; if (!G.offre.includes(t)) G.offre.push(t); }
+    G.pos = null; G.rot = 0; G.choixOffre = 0;
+    if (G.niv === 2) { G.phase = "offre"; G.sel = null; G.iOffre = null; }
+    else { G.phase = "pose"; G.iOffre = 0; G.sel = G.offre[0]; }
+    if (!debut) {
+      const possible = G.offre.some(t => { const s0 = G.sel, r0 = G.rot; G.sel = t; const ok = TYPES7.includes(t) && [0, 1, 2, 3].some(r => { G.rot = r; return [...Array(W).keys()].some(x => !raisonInvalide(t, formeN(t, r).map(([a, b]) => [x + a, chuteA(x) + b]))); }); G.sel = s0; G.rot = r0; return ok; });
+      if (!possible) { const [a, b] = G.lignesJ; return fin(`Plus de place pour le joueur ${j + 1}. ${a === b ? "Égalité" : `Le joueur ${a > b ? 1 : 2} gagne`} avec ${Math.max(a, b)} ligne${Math.max(a, b) > 1 ? "s" : ""} !`, a !== b); }
+    }
+    dire(G.phase === "offre" ? `Joueur ${2 - j} : choisis la pièce que le joueur ${j + 1} va devoir poser.` : `Au tour du joueur ${j + 1} : choisis ta pièce et pose-la dans ta moitié.`);
+  }
+  function choisirOffre(i) {
+    if (G.mode !== "duel" || G.fini || finOuverte() || i < 0 || i >= G.offre.length) return;
+    if (G.phase === "offre") { G.phase = "pose"; G.iOffre = i; G.sel = G.offre[i]; G.rot = 0; G.pos = null; bip(880);
+      dire(`Joueur ${G.tour % 2 + 1} : voici ta pièce, à toi de la placer !`); majPanneau(); dessine(); return; }
+    if (G.niv === 2) return;
+    G.iOffre = i; G.sel = G.offre[i]; G.rot = 0; borne(); bip(820); majPanneau(); dessine();
+  }
+  function apresDuel() {
+    const pleine = y => G.grille[y].every(Boolean);
+    G.lignesJ = [[...Array(H / 2).keys()].filter(y => pleine(y + H / 2)).length, [...Array(H / 2).keys()].filter(y => pleine(y)).length];
+    const j = G.tour % 2;
+    if (G.lignesJ[j] >= 3) { majPanneau(); return gagne(`Le joueur ${j + 1} a complété 3 lignes : il gagne le duel !`); }
+    G.tour++; nouveauTourDuel(false); majPanneau(); dessine();
+  }
+
   // ---------------- joystick virtuel : il apparaît là où le doigt se pose, n'importe où sur la zone du plateau ----------------
   // La pièce ne saute jamais sous le doigt : elle part de sa place et avance case par case dans la direction du joystick.
   function demarreGlisse() {}
@@ -1654,7 +1762,7 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
   elJ("j-quitter").addEventListener("click", fermeJeu);
   elJ("j-tourner").addEventListener("click", tourner);
   elJ("j-annuler").addEventListener("click", annuler);
-  function relance(suite) { elJ("j-fin").hidden = true; if (suite) { if (niv < 2) niv++; else { niv = 0; jeu = (jeu + 1) % 5; } maj(false); } nouvellePartie(); majPanneau(); dessine(); }
+  function relance(suite) { elJ("j-fin").hidden = true; if (suite) { if (niv < 2) niv++; else { niv = 0; jeu = typeof prochainJeu === "function" ? prochainJeu(jeu) : (jeu + 1) % JEUX.length; } maj(false); } nouvellePartie(); majPanneau(); dessine(); }
   // Recommencer demande une confirmation (2e appui dans les 3 secondes) pour ne pas perdre la partie par erreur
   let confirmeRec = null;
   elJ("j-recommencer").addEventListener("click", () => {
@@ -1669,7 +1777,7 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
   window.addEventListener("resize", () => { if (G.ouvert) dimensionne(); });
   if (window.ResizeObserver) new ResizeObserver(() => { if (G.ouvert) dimensionne(); }).observe(elJ("j-zone-plateau"));
   brancheCanvas(); brancheCommandes();
-  window.__jeu = { G, get STICK() { return STICK; }, get JOY() { return JOY; }, poser, valider, deplace, tourner, centreSur, ouvreJeu, nouvellePartie, choisirMystere, validerMystere, bougeCurseur, ancre, casesDe };
+  window.__jeu = { G, choisirOffre, get STICK() { return STICK; }, get JOY() { return JOY; }, poser, valider, deplace, tourner, centreSur, ouvreJeu, nouvellePartie, choisirMystere, validerMystere, bougeCurseur, ancre, casesDe };
 
   return ouvreJeu;
   })();
