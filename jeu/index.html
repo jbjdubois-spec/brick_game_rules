@@ -1,0 +1,1318 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Retro Nono Arcade : le jeu de briques à jouer à l'écran, 5 jeux et 3 niveaux, au doigt, au clavier, à la manette ou sur borne d'arcade.">
+<title>Retro Nono Arcade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap">
+<style>
+/* Mise en page : écran de borne d'arcade — en-tête (logo, titre, son), bandeau animé, puis 3 étapes : jeu, niveau, mission */
+:root {
+  --bg: #120E24; --bg2: #1A1433; --panel: #221B40; --line: #3D3370; --ink: #F4F0FF; --muted: #B3ABD6;
+  --gold: #FFD23F; --pink: #FF5EA8; --cyan: #3CC8F0; --ok: #7CE07C;
+  --pixel: "Press Start 2P", "Courier New", monospace;
+  --body: "VT323", "Courier New", monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--bg); }
+body { color: var(--ink); font-family: var(--body); font-size: 22px; line-height: 1.2;
+  background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 3px); }
+.wrap { max-width: 1040px; margin: 0 auto; padding-inline: 16px; padding-block: 16px 40px; display: grid; gap: 18px; }
+
+header { display: flex; flex-wrap: nowrap; align-items: center; gap: 12px; justify-content: space-between; }
+.marque { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; min-width: 0; }
+.logo { margin: 0; font-weight: 400; min-width: 0; position: relative; padding: 10px 14px 12px; border: 3px dashed var(--line); border-radius: 6px; display: grid; gap: 4px; justify-items: center; }
+.logo .mot { font-family: var(--pixel); font-size: clamp(16px, 3.4vw, 24px); line-height: 1; letter-spacing: 2px; transform: skewX(-8deg);
+  color: var(--gold); text-shadow: 3px 3px 0 #C2410C, 6px 6px 0 #4A1D0C; -webkit-text-stroke: 1px #4A1D0C; }
+.logo .mot b { color: var(--pink); text-shadow: 3px 3px 0 #9D174D, 6px 6px 0 #3B0A1F; font-weight: 400; }
+.logo .prov { font-size: 15px; color: var(--muted); font-family: var(--body); }
+.logo .mot { display: block; }
+h1:not(.logo) { margin: 0; font-family: var(--pixel); font-weight: 400; font-size: clamp(15px, 2.6vw, 20px); line-height: 1.5; text-wrap: balance; }
+h1 span { color: var(--cyan); }
+.son { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.son { gap: 4px; flex-wrap: nowrap; flex-shrink: 0; }
+.son button.icone { background: none; box-shadow: none; margin: 0; padding: 6px; min-width: 48px; min-height: 48px; display: grid; place-items: center;
+  color: var(--cyan); filter: drop-shadow(3px 3px 0 #0B0918); }
+.son button.icone:hover { background: none; color: #8FE3FA; }
+.son button.icone:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.son .ico { width: 32px; height: 32px; display: block; image-rendering: pixelated; shape-rendering: crispEdges; }
+#musique[aria-pressed="true"] { color: var(--gold); }
+#muet[aria-pressed="true"] { color: var(--pink); }
+
+button { font-family: var(--pixel); font-size: 11px; line-height: 1.4; color: var(--ink); background: var(--panel); border: 0; cursor: pointer;
+  padding: 12px 14px; min-height: 44px; border-radius: 0;
+  box-shadow: 0 -4px 0 0 var(--line), 0 4px 0 0 var(--line), -4px 0 0 0 var(--line), 4px 0 0 0 var(--line); margin: 4px; }
+button:hover { background: #2E2558; }
+button:active { transform: translateY(2px); }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--gold); outline-offset: 6px; }
+button.jaune { background: var(--gold); color: #2A1B00; box-shadow: 0 -4px 0 0 #B8860B, 0 4px 0 0 #8A5E00, -4px 0 0 0 #B8860B, 4px 0 0 0 #8A5E00; }
+button.jaune:hover { background: #FFE07A; }
+
+.ecran { position: relative; border: 4px solid var(--line); background: #0B0918; }
+.ecran canvas { display: block; width: 100%; height: auto; image-rendering: pixelated; image-rendering: crisp-edges; cursor: pointer; }
+.ecran .astuce { position: absolute; right: 8px; bottom: 6px; font-size: 16px; color: #E8E2FF; background: rgba(11,9,24,0.7); padding: 0 6px; pointer-events: none; }
+
+.etape { display: grid; gap: 12px; }
+.etape h2 { margin: 0; font-family: var(--pixel); font-weight: 400; font-size: clamp(12px, 2vw, 15px); color: var(--gold); line-height: 1.6; }
+.etape h2 i { font-style: normal; color: var(--muted); }
+
+.jeux { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
+.cartouche { text-align: left; display: grid; gap: 10px; align-content: start; padding: 14px; font-family: var(--body); font-size: 20px; min-height: 150px; }
+.cartouche .tete { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.cartouche .nom { font-family: var(--pixel); font-size: 11px; line-height: 1.5; }
+.cartouche .but { color: var(--muted); font-size: 19px; line-height: 1.1; }
+.cartouche .etoiles { font-size: 18px; color: var(--gold); letter-spacing: 1px; }
+.cartouche[aria-pressed="true"] { background: #2E2558; box-shadow: 0 -4px 0 0 var(--c), 0 4px 0 0 var(--c), -4px 0 0 0 var(--c), 4px 0 0 0 var(--c); }
+.cartouche .bande { height: 6px; background: var(--c); }
+
+.niveaux { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.niveaux button { display: grid; gap: 6px; justify-items: center; padding: 14px 8px; }
+.niveaux .st { font-size: 18px; color: var(--gold); letter-spacing: 2px; }
+.niveaux .lib { font-family: var(--body); font-size: 22px; }
+.niveaux button[aria-pressed="true"] { background: var(--gold); color: #2A1B00; }
+.niveaux button[aria-pressed="true"] .st { color: #2A1B00; }
+
+.mission { background: var(--panel); border: 4px solid var(--c, var(--line)); padding: 18px; display: grid; gap: 14px; }
+.mission .titre { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; justify-content: space-between; }
+.mission h3 { margin: 0; font-family: var(--pixel); font-weight: 400; font-size: clamp(13px, 2.4vw, 17px); line-height: 1.5; text-wrap: balance; }
+.mission .niv { color: var(--gold); font-size: 22px; }
+.mission .objectif { font-size: 26px; line-height: 1.15; color: #FFFFFF; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.bloc { display: grid; gap: 6px; align-content: start; min-width: 0; }
+.bloc h4 { margin: 0; font-family: var(--pixel); font-weight: 400; font-size: 10px; color: var(--cyan); letter-spacing: 1px; line-height: 1.6; }
+.bloc ol, .bloc ul { margin: 0; padding-left: 1.3em; display: grid; gap: 4px; }
+.bloc p { margin: 0; }
+.adulte { border-top: 2px dashed var(--line); padding-top: 10px; color: var(--muted); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.bravo { font-family: var(--pixel); font-size: 12px; color: var(--ok); min-height: 1.5em; }
+
+.galerie-filtres { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.galerie-filtres > span { color: var(--muted); font-size: 20px; margin-right: 6px; }
+.galerie-filtres button { display: grid; gap: 4px; justify-items: center; }
+.galerie-filtres .fb { font-family: var(--body); font-size: 17px; letter-spacing: 1px; }
+.niveaux .desc { font-family: var(--body); font-size: 18px; color: var(--muted); }
+.niveaux button[aria-pressed="true"] .desc { color: #4A3600; }
+.points, .glisse { display: none; }
+.carte svg { max-height: 220px; width: auto; max-width: 100%; }
+.galerie-filtres button[aria-pressed="true"] { background: var(--gold); color: #2A1B00; }
+.galerie { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 14px; }
+.carte { display: grid; gap: 6px; padding: 8px; font-family: var(--body); font-size: 18px; text-align: center; justify-items: center; }
+.carte svg { width: 100%; height: auto; display: block; background: #FFFFFF; }
+.carte .niv5 { color: var(--gold); font-size: 16px; letter-spacing: 1px; }
+.carte[aria-pressed="true"] { background: #2E2558; box-shadow: 0 -4px 0 0 var(--gold), 0 4px 0 0 var(--gold), -4px 0 0 0 var(--gold), 4px 0 0 0 var(--gold); }
+.zoom { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 20px; align-items: start; background: var(--panel); border: 4px solid #7AB536; padding: 16px; }
+.zoom svg { width: 100%; height: auto; display: block; background: #FFFFFF; }
+.vues { display: grid; grid-template-columns: minmax(0, 1fr) 76px; gap: 12px; align-items: end; }
+.vue-grande svg { max-height: 420px; width: auto; max-width: 100%; margin: 0 auto; }
+.vue-plateau { margin: 0; display: grid; gap: 4px; justify-items: center; }
+.vue-plateau figcaption { font-size: 16px; color: var(--muted); text-align: center; line-height: 1; }
+.zoom h3 { margin: 0; font-family: var(--pixel); font-weight: 400; font-size: clamp(13px, 2.4vw, 16px); line-height: 1.5; }
+.zoom .info { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.liste-pieces { display: flex; flex-wrap: wrap; gap: 8px 14px; }
+.liste-pieces span { display: inline-flex; align-items: center; gap: 8px; font-size: 21px; white-space: nowrap; }
+@media (max-width: 600px) { .zoom { grid-template-columns: 1fr; } }
+footer { color: var(--muted); font-size: 18px; text-align: center; }
+@media (max-width: 520px) {
+  body { font-size: 20px; }
+  .niveaux { gap: 10px; }
+  .niveaux .lib { font-size: 19px; }
+  .cartouche { min-height: 0; }
+}
+
+/* ---------- téléphone ---------- */
+@media (max-width: 700px) {
+  .logo { padding: 8px 10px 10px; }
+  .logo .mot { font-size: 15px; letter-spacing: 1px; }
+  .logo .prov { font-size: 14px; }
+  body { font-size: 22px; }
+  .etape { gap: 14px; }
+  .etape h2 { font-size: 16px; line-height: 1.6; border-bottom: 3px solid var(--line); padding-bottom: 8px; }
+  .etape h2 i { display: block; font-size: 12px; margin-top: 4px; }
+  /* 1 · carrousel des jeux */
+  .jeux { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; margin-inline: -16px; padding: 10px 7.5% 16px;
+    scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .jeux::-webkit-scrollbar { display: none; }
+  .cartouche { flex: 0 0 85%; scroll-snap-align: center; min-height: 270px; padding: 20px; gap: 16px; margin: 4px 0; }
+  .cartouche .nom { font-size: 15px; }
+  .cartouche svg { width: 70px; height: auto; }
+  .cartouche .but { font-size: 30px; line-height: 1.05; color: var(--ink); }
+  .cartouche .etoiles { font-size: 30px; }
+  .points { display: flex; justify-content: center; gap: 10px; }
+  .points span { width: 12px; height: 12px; background: var(--line); }
+  .points span.on { background: var(--c); width: 28px; }
+  .glisse { display: block; margin: 0; text-align: center; color: var(--muted); font-size: 20px; }
+  /* 2 · niveaux en grandes lignes */
+  .niveaux { grid-template-columns: 1fr; gap: 16px; }
+  .niveaux button { grid-template-columns: auto 1fr; grid-template-areas: "st lib" "st desc"; justify-items: start; text-align: left; gap: 2px 16px; padding: 16px 18px; }
+  .niveaux .st { grid-area: st; font-size: 28px; align-self: center; }
+  .niveaux .lib { grid-area: lib; font-family: var(--pixel); font-size: 15px; line-height: 1.6; }
+  .niveaux .desc { grid-area: desc; font-size: 21px; }
+  /* 3 · mission en hauteur */
+  .mission { padding: 16px; gap: 16px; }
+  .mission h3 { font-size: 16px; }
+  .mission .niv { font-size: 24px; }
+  .mission .objectif { font-size: 29px; }
+  .cols { grid-template-columns: 1fr; gap: 18px; }
+  .bloc h4 { font-size: 13px; }
+  .bloc ol, .bloc ul { gap: 8px; }
+  .actions { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  .actions button { font-size: 13px; padding: 16px; width: calc(100% - 8px); }
+  .bravo { text-align: center; font-size: 14px; }
+  /* 4 · cartes images en grand */
+  .galerie-filtres { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .galerie-filtres > span { grid-column: 1 / -1; font-size: 22px; }
+  .galerie-filtres button { padding: 14px 4px; font-size: 12px; margin: 4px; }
+  .galerie-filtres .fb { font-size: 19px; }
+  .galerie { grid-template-columns: 1fr; gap: 22px; }
+  .carte { padding: 16px; gap: 10px; font-size: 28px; }
+  .carte svg { max-height: 360px; }
+  .carte .niv5 { font-size: 24px; }
+  .zoom { padding: 14px; }
+  .zoom h3 { font-size: 16px; }
+  .vues { grid-template-columns: minmax(0, 1fr) 70px; }
+  .vue-grande svg { max-height: 380px; }
+  .liste-pieces span { font-size: 24px; }
+}
+@media (prefers-reduced-motion: reduce) { button:active { transform: none; } }
+/* ===== le jeu jouable : écran plein, plateau à gauche, pièces à droite (en dessous sur téléphone) ===== */
+#jeu { position: fixed; inset: 0; z-index: 50; background: var(--bg); display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; user-select: none; -webkit-user-select: none;
+  gap: 8px; padding: max(8px, env(safe-area-inset-top)) 12px max(8px, env(safe-area-inset-bottom));
+  background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 3px); }
+#jeu[hidden], #j-fin[hidden], #j-stick[hidden] { display: none; }
+.j-haut { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+#j-titre { margin: 0; font-family: var(--pixel); font-weight: 400; font-size: clamp(11px, 2.2vw, 15px); color: var(--gold); line-height: 1.5; }
+#j-obj { margin: 0; font-size: 21px; line-height: 1.1; color: var(--ink); }
+.j-corps { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 330px); gap: 14px; min-height: 0; }
+#j-zone-plateau { min-height: 0; min-width: 0; overflow: hidden; position: relative; touch-action: none; display: grid; place-items: center; }
+#j-plateau { display: block; border: 4px solid var(--line); background: #0B0918; touch-action: none; cursor: crosshair; box-sizing: content-box; }
+.j-cote > * { flex-shrink: 0; }
+.j-cote { display: flex; flex-direction: column; gap: 10px; min-height: 0; overflow-y: auto; padding: 4px; }
+#j-msg { margin: 0; min-height: 2.3em; font-size: 20px; line-height: 1.1; color: var(--cyan); }
+#j-pieces { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-start; }
+.j-piece { display: grid; justify-items: center; align-content: center; gap: 4px; min-width: 66px; min-height: 66px; padding: 8px 6px; margin: 4px; touch-action: none; }
+.j-piece span { font-family: var(--pixel); font-size: 10px; color: var(--muted); }
+.j-piece[aria-pressed="true"] { background: #3A2F72; box-shadow: 0 -4px 0 0 var(--gold), 0 4px 0 0 var(--gold), -4px 0 0 0 var(--gold), 4px 0 0 0 var(--gold); }
+.j-piece:disabled { opacity: .3; cursor: default; }
+.j-pioche { display: grid; gap: 8px; justify-items: start; width: 100%; }
+.j-mystere { padding: 12px; background: #0B0918; border: 3px solid var(--line); min-width: 110px; min-height: 70px; display: grid; place-items: center; }
+.j-mystere.ombre { background: #EDE9FF; }
+.j-desc { margin: 0; font-size: 22px; color: var(--gold); }
+.j-aide, .j-score { margin: 0; font-size: 19px; color: var(--muted); }
+.j-noms { display: flex; flex-wrap: wrap; gap: 2px; }
+.j-nom { min-width: 46px; font-size: 13px; }
+#j-info { display: grid; gap: 6px; justify-items: start; }
+#j-info:empty { display: none; }
+.j-chrono { margin: 0; font-size: 22px; color: var(--pink); }
+.j-consignes { margin: 0; padding-left: 30px; display: grid; gap: 6px; font-size: 19px; }
+.j-voir { font-size: 9px; padding: 6px 8px; min-height: 0; }
+button:disabled { opacity: .45; cursor: default; }
+.j-aide-touches { margin: 0; font-size: 17px; color: var(--muted); }
+#j-fin { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(11,9,24,.78); z-index: 2; padding: 16px; }
+.j-fin-boite { background: var(--panel); border: 4px solid var(--gold); padding: 22px; max-width: 460px; display: grid; gap: 14px; text-align: center; }
+#j-fin-titre { margin: 0; font-family: var(--pixel); font-weight: 400; font-size: 20px; color: var(--gold); }
+#j-fin-txt { margin: 0; font-size: 24px; }
+.j-fin-boite .boutons { display: flex; flex-wrap: wrap; justify-content: center; }
+button.jouer { font-size: 14px; }
+/* commandes : croix à gauche, gros boutons ronds comme sur la borne */
+.j-commandes { display: grid; grid-template-columns: auto auto 1fr; align-items: center; gap: 10px 24px; justify-content: center; }
+.j-croix { display: grid; grid-template-columns: repeat(3, 56px); grid-template-rows: repeat(3, 50px); grid-template-areas: ". h ." "g . d" ". b ."; gap: 2px; }
+.j-croix button { margin: 0; padding: 0; min-height: 0; font-size: 18px; touch-action: none; }
+#j-haut { grid-area: h; } #j-gauche { grid-area: g; } #j-droite { grid-area: d; } #j-bas { grid-area: b; }
+.j-ronds { display: flex; gap: 18px; align-items: center; }
+button.rond { width: 92px; height: 92px; border-radius: 50%; display: grid; place-items: center; align-content: center; gap: 4px; padding: 0; margin: 0;
+  font-family: var(--body); font-size: 34px; line-height: 1; color: #1A1433; touch-action: manipulation; }
+button.rond span { font-family: var(--pixel); font-size: 9px; }
+button.rond.tourne { background: var(--gold); box-shadow: 0 6px 0 #8A5E00, inset 0 -6px 0 rgba(0,0,0,.18); }
+button.rond.pose { background: var(--ok); box-shadow: 0 6px 0 #2E7D32, inset 0 -6px 0 rgba(0,0,0,.18); }
+button.rond:hover { filter: brightness(1.08); }
+button.rond:active { transform: translateY(4px); box-shadow: 0 2px 0 #444; }
+button.rond:disabled { filter: grayscale(.8); opacity: .5; }
+.j-petits { display: flex; flex-wrap: wrap; gap: 2px; justify-content: flex-end; }
+.j-petits button { font-size: 10px; }
+.j-nom[aria-current="true"] { outline: 3px solid var(--ok); outline-offset: 3px; }
+@media (max-width: 1000px) { .j-commandes { grid-template-columns: auto auto; } .j-petits { grid-column: 1 / -1; justify-content: center; } }
+@media (max-width: 760px) {
+  #jeu { gap: 6px; padding-inline: 8px; }
+  #j-obj { font-size: 18px; }
+  .j-corps { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; gap: 6px; }
+  .j-cote { overflow: visible; max-height: 34vh; overflow-y: auto; padding: 0 4px; gap: 6px; }
+  #j-msg { font-size: 17px; min-height: 0; height: 3.3em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+  #j-pieces { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+  .j-piece { min-width: 58px; min-height: 58px; flex-shrink: 0; }
+  .j-pioche { grid-template-columns: auto 1fr; align-items: center; }
+  .j-pioche .j-noms, .j-pioche .j-score, .j-pioche > button { grid-column: 1 / -1; }
+  .j-mystere { min-width: 80px; min-height: 56px; padding: 8px; }
+  .j-commandes { grid-template-columns: auto 1fr; gap: 4px 10px; }
+  .j-croix { grid-template-columns: repeat(3, 46px); grid-template-rows: repeat(3, 40px); }
+  .j-ronds { justify-content: flex-end; gap: 12px; }
+  button.rond { width: 74px; height: 74px; font-size: 28px; }
+  button.rond span { font-size: 8px; }
+  .j-petits button { font-size: 9px; padding: 8px 6px; min-height: 36px; }
+  #j-obj { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }  .j-aide-touches { display: none; }
+}
+
+/* joystick virtuel : transparent, on voit le plateau à travers */
+#j-stick { position: absolute; width: 124px; height: 124px; margin: -62px 0 0 -62px; border-radius: 50%; pointer-events: none; z-index: 3;
+  background: radial-gradient(circle, rgba(255,255,255,.10) 0 55%, rgba(255,255,255,.18) 56% 100%); border: 3px solid rgba(255,255,255,.35); }
+#j-stick .fl { position: absolute; font-size: 14px; color: rgba(255,255,255,.45); line-height: 1; }
+#j-stick .h { top: 6px; left: 50%; transform: translateX(-50%); } #j-stick .b { bottom: 6px; left: 50%; transform: translateX(-50%); }
+#j-stick .g { left: 7px; top: 50%; transform: translateY(-50%); } #j-stick .d { right: 7px; top: 50%; transform: translateY(-50%); }
+#j-stick-bouton { position: absolute; left: 50%; top: 50%; width: 56px; height: 56px; border-radius: 50%; transform: translate(-50%, -50%);
+  background: rgba(255,210,63,.38); border: 3px solid rgba(255,230,140,.6); box-shadow: 0 0 16px rgba(255,210,63,.35); }
+#j-plateau { cursor: grab; }
+/* écran tactile : le joystick remplace la croix */
+@media (pointer: coarse) {
+  .j-croix { display: none; }
+  .j-commandes { grid-template-columns: 1fr auto; }
+  .j-ronds { grid-column: 2; grid-row: 1; }
+  .j-petits { grid-column: 1; grid-row: 1; justify-content: flex-start; flex-direction: column; align-items: flex-start; }
+}
+</style>
+<style>body{margin:0}[hidden]{display:none!important}</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 class="logo"><span class="mot">RETRO <b>NONO</b></span><span class="prov">logo provisoire</span></h1>
+    <div class="son" role="group" aria-label="Son">
+      <button id="musique" class="icone" aria-pressed="false" aria-label="Lancer la musique et les bruitages" title="Musique"><span id="ico-musique"></span></button>
+      <button id="muet" class="icone" aria-pressed="false" aria-label="Couper le son" title="Son"><span id="ico-muet"></span></button>
+    </div>
+  </header>
+
+  <div class="ecran">
+    <canvas id="bandeau" width="320" height="96" aria-label="Animation : un petit T doré court et saute par-dessus les pièces qui tombent"></canvas>
+    <div class="astuce">clic = saut !</div>
+  </div>
+
+  <section class="etape" aria-labelledby="t1">
+    <h2 id="t1">1 · Choisis ton jeu <i>— 5 jeux</i></h2>
+    <div class="jeux" id="jeux"></div>
+    <div class="points" id="points" aria-hidden="true"></div>
+    <p class="glisse">◀ Fais glisser pour changer de jeu ▶</p>
+  </section>
+
+  <section class="etape" aria-labelledby="t2">
+    <h2 id="t2">2 · Choisis ton niveau</h2>
+    <div class="niveaux" id="niveaux"></div>
+  </section>
+
+  <section class="etape" aria-labelledby="t3">
+    <h2 id="t3">3 · Ta mission</h2>
+    <article class="mission" id="mission" aria-live="polite"></article>
+  </section>
+
+  <section class="etape" aria-labelledby="t4" id="bloc-galerie" hidden>
+    <h2 id="t4">4 · Les cartes images <i>— à reproduire sur le plateau</i></h2>
+    <div class="galerie-filtres" id="filtres" role="group" aria-label="Difficulté des images"></div>
+    <div class="zoom" id="zoom"></div>
+    <div class="galerie" id="galerie"></div>
+  </section>
+
+<div id="jeu" hidden role="dialog" aria-modal="true" aria-labelledby="j-titre">
+  <div class="j-haut">
+    <h2 id="j-titre">JEU</h2>
+    <button id="j-quitter" aria-label="Quitter le jeu et revenir aux missions">✕ Quitter</button>
+  </div>
+  <p id="j-obj"></p>
+  <div class="j-corps">
+    <div id="j-zone-plateau"><canvas id="j-plateau" aria-label="Plateau de 10 cases sur 20 : pose le doigt et glisse pour déplacer la pièce"></canvas>
+      <div id="j-stick" hidden aria-hidden="true"><span class="fl h">▲</span><span class="fl b">▼</span><span class="fl g">◀</span><span class="fl d">▶</span><div id="j-stick-bouton"></div></div></div>
+    <div class="j-cote">
+      <p id="j-msg" aria-live="polite"></p>
+      <div id="j-pieces" role="group" aria-label="Pièces disponibles"></div>
+      <div id="j-info"></div>
+      <p class="j-aide-touches">Borne d'arcade : joystick = déplacer · bouton 1 = poser · bouton 2 = tourner · bouton 3 = pièce suivante · bouton 4 = annuler · COIN = menu.<br>Clavier : flèches, Entrée = poser, T = tourner, Espace = pièce suivante, Retour arrière = annuler, Échap = menu.</p>
+    </div>
+  </div>
+  <div class="j-commandes">
+    <div class="j-croix" role="group" aria-label="Déplacer la pièce">
+      <button id="j-haut" aria-label="Monter la pièce">▲</button>
+      <button id="j-gauche" aria-label="Pièce vers la gauche">◀</button>
+      <button id="j-droite" aria-label="Pièce vers la droite">▶</button>
+      <button id="j-bas" aria-label="Descendre la pièce">▼</button>
+    </div>
+    <div class="j-ronds">
+      <button id="j-tourner" class="rond tourne" aria-label="Tourner la pièce (bouton 2)">⟳<span>TOURNER</span></button>
+      <button id="j-poser" class="rond pose" aria-label="Poser la pièce (bouton 1)">✔<span>POSER</span></button>
+    </div>
+    <div class="j-petits">
+      <button id="j-annuler">↶ Annuler</button>
+      <button id="j-recommencer">Recommencer</button>
+    </div>
+  </div>
+  <div id="j-fin" hidden>
+    <div class="j-fin-boite" role="alertdialog" aria-labelledby="j-fin-titre" aria-describedby="j-fin-txt">
+      <h3 id="j-fin-titre">BRAVO !</h3>
+      <p id="j-fin-txt"></p>
+      <div class="boutons">
+        <button id="j-rejouer" class="jaune">Rejouer</button>
+        <button id="j-suite">Défi suivant</button>
+        <button id="j-menu">Menu</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <footer>Jeu imprimé en 3D · 50 pièces · plateau de 10 × 20 cases</footer>
+</div>
+
+<script>
+(function () {
+  // ---------------- contenu des jeux ----------------
+  const JEUX = [
+    { id: "puzzle", nom: "Le grand puzzle", c: "#3CC8F0", piece: [[0,0],[1,0],[2,0],[3,0]], but: "Remplir une zone sans laisser de trou.",
+      apprend: "se repérer, tourner une forme dans sa tête, persévérer.",
+      niveaux: [
+        { objectif: "Remplis un carré de 4 × 4 cases avec les pièces O et I.", pieces: "4 O et 4 I",
+          etapes: ["Repère le carré de 4 × 4 cases dans un coin du plateau.", "Pose les pièces une par une à l'intérieur.", "Tourne les I s'ils ne rentrent pas."],
+          reussi: "Les 16 cases du carré sont couvertes, aucune pièce ne dépasse.", adulte: "Montrez le carré du doigt ou entourez-le avec 4 pièces d'une autre couleur." },
+        { objectif: "Remplis la moitié du plateau (10 × 10 cases) avec des pièces tirées au hasard.", pieces: "25 pièces dans un sac",
+          etapes: ["Tire une pièce dans le sac sans regarder.", "Trouve-lui une place dans la moitié du haut.", "Continue jusqu'à ce que la moitié soit pleine."],
+          reussi: "La moitié du plateau est couverte. Un ou deux trous, c'est déjà très bien !", adulte: "S'il reste un trou impossible, proposez d'échanger une pièce contre une autre." },
+        { objectif: "Remplis tout le plateau avec les 49 pièces de couleur, en gardant un trou en forme de T. Le T doré se pose en dernier !", pieces: "les 50 pièces",
+          etapes: ["Garde le T doré de côté.", "Commence par les bords, les pièces I et O d'abord.", "Garde un trou en forme de T pour la fin.", "Pose le T doré dans le dernier trou."],
+          reussi: "Les 200 cases sont couvertes, le T doré est posé.", adulte: "C'est possible : il existe plusieurs solutions. Le défi peut se faire en plusieurs séances." },
+      ] },
+    { id: "copie", nom: "Copie-moi", c: "#F7D51D", piece: [[0,0],[1,0],[0,1],[1,1]], but: "Refaire un modèle à l'identique.",
+      apprend: "la mémoire, les mots de l'espace (en haut, à côté, tourner).",
+      niveaux: [
+        { objectif: "Recopie un modèle de 3 pièces. Le modèle reste visible.", pieces: "2 jeux de 3 pièces identiques",
+          etapes: ["L'adulte construit le modèle en haut du plateau.", "Reconstruis le même en bas.", "Comparez les deux ensemble."],
+          reussi: "Les deux constructions sont pareilles : mêmes pièces, même sens.", adulte: "Commencez avec des pièces de couleurs différentes, c'est plus facile à repérer." },
+        { objectif: "Regarde le modèle de 5 pièces pendant 10 secondes, puis il est caché. Refais-le de mémoire.", pieces: "2 jeux de 5 pièces identiques",
+          etapes: ["Regarde bien le modèle : compte jusqu'à 10.", "L'adulte cache le modèle avec une feuille.", "Reconstruis-le, puis on soulève la feuille pour vérifier."],
+          reussi: "Au moins 4 pièces sur 5 sont au bon endroit, dans le bon sens.", adulte: "Si c'est trop dur, laissez regarder une deuxième fois 5 secondes." },
+        { objectif: "Pas de modèle à voir : écoute les consignes et pose les pièces.", pieces: "5 à 8 pièces",
+          etapes: ["L'adulte dit une consigne : « le T violet en haut à gauche, la pointe vers le bas ».", "Pose la pièce exactement comme dit.", "Ensuite, c'est toi qui donnes les consignes !"],
+          reussi: "Le plateau correspond au modèle caché de l'adulte.", adulte: "Idéal en orthophonie : travaillez haut / bas, gauche / droite, à côté de, au-dessus de." },
+      ] },
+    { id: "pioche", nom: "La pioche mystère", c: "#B04BB2", piece: [[0,0],[1,0],[2,0],[1,1]], but: "Reconnaître une pièce au toucher.",
+      apprend: "le toucher, nommer, décrire avec des phrases.",
+      niveaux: [
+        { objectif: "Pioche une pièce dans le sac, dis son nom ou sa couleur, puis pose-la où tu veux.", pieces: "toutes les pièces dans un sac en tissu",
+          etapes: ["Mets la main dans le sac.", "Sors une pièce et dis son nom : I, O, T, S, Z, L ou J.", "Pose-la sur le plateau."],
+          reussi: "Tu as nommé 5 pièces de suite.", adulte: "Acceptez la couleur ou une description (« le bâton ») au début." },
+        { objectif: "Devine la pièce au toucher AVANT de la sortir. Elle doit toucher une pièce déjà posée.", pieces: "toutes les pièces dans un sac",
+          etapes: ["Touche la pièce dans le sac sans regarder.", "Dis quelle pièce c'est.", "Sors-la : as-tu deviné juste ?", "Pose-la contre une pièce déjà posée."],
+          reussi: "3 bonnes devinettes sur 5.", adulte: "Commencez avec seulement 3 formes très différentes dans le sac : I, O, T." },
+        { objectif: "Décris la pièce sans dire son nom : les autres doivent deviner laquelle c'est.", pieces: "toutes les pièces, 2 joueurs ou plus",
+          etapes: ["Pioche une pièce en cachette.", "Décris-la : « trois carrés en ligne et un en dessous, au milieu ».", "Le premier qui trouve pose la pièce sur le plateau."],
+          reussi: "Les autres ont trouvé ta pièce grâce à ta description.", adulte: "Aidez avec des mots-outils : en ligne, en escalier, au milieu, au bout." },
+      ] },
+    { id: "lignes", nom: "Les lignes à deux", c: "#E5412B", piece: [[1,0],[2,0],[0,1],[1,1]], but: "Compléter des lignes, chacun son tour.",
+      apprend: "attendre son tour, prévoir, jouer ensemble.",
+      niveaux: [
+        { objectif: "Chacun son tour, choisissez une pièce et remplissez le plateau en partant du bas.", pieces: "toutes les pièces, 2 joueurs",
+          etapes: ["Les pièces se posent en bas, ou sur d'autres pièces (comme si elles tombaient).", "Chacun choisit sa pièce et la pose.", "Une ligne de 10 cases complète = une étoile pour l'équipe."],
+          reussi: "L'équipe a gagné 3 étoiles.", adulte: "Penchez le plateau : on voit bien le « bas », comme sur l'écran." },
+        { objectif: "Même jeu, mais la pièce est tirée au hasard dans le sac.", pieces: "toutes les pièces dans un sac, 2 joueurs",
+          etapes: ["Tire une pièce sans regarder.", "Trouve la meilleure place pour elle.", "Ton coéquipier peut te donner un conseil."],
+          reussi: "L'équipe a complété 5 lignes.", adulte: "Laissez les enfants discuter de la meilleure place avant de poser." },
+        { objectif: "Avant de poser, annonce où tu vas mettre ta pièce et pourquoi. Objectif : 10 lignes à deux.", pieces: "toutes les pièces dans un sac, 2 joueurs",
+          etapes: ["Tire une pièce.", "Dis où tu vas la poser : « je la mets en bas à droite pour finir la ligne ».", "Pose-la. Ton coéquipier vérifie."],
+          reussi: "10 lignes complètes : la moitié du plateau !", adulte: "Valorisez les explications autant que le résultat." },
+      ] },
+    { id: "images", nom: "Les images", c: "#7AB536", piece: [[0,0],[1,0],[1,1],[2,1]], but: "Construire une image avec les pièces.",
+      apprend: "inventer, observer une forme, raconter.",
+      niveaux: [
+        { objectif: "Construis l'image de la carte modèle : toutes les pièces sont dessinées dessus.", pieces: "selon la carte",
+          etapes: ["Choisis une carte : maison, sapin, fusée ou bonhomme.", "Trouve les pièces de la carte.", "Pose-les pareil sur le plateau."],
+          reussi: "Ton image ressemble à la carte.", adulte: "Une carte à la taille réelle du plateau aide beaucoup au début." },
+        { objectif: "Sur la carte, on voit seulement la silhouette de l'image : à toi de trouver les pièces.", pieces: "selon la silhouette",
+          etapes: ["Regarde la forme de la silhouette.", "Essaie des pièces pour la remplir.", "Tourne-les jusqu'à ce que ça rentre."],
+          reussi: "La silhouette est entièrement remplie.", adulte: "Plusieurs solutions sont possibles : comparez-les." },
+        { objectif: "Invente ton image, puis fais-la deviner aux autres.", pieces: "toutes les pièces",
+          etapes: ["Imagine ce que tu veux construire.", "Construis-le sur le plateau.", "Les autres devinent, puis tu racontes ton image."],
+          reussi: "Les autres ont deviné, ou tu as raconté ton image.", adulte: "Prenez une photo : on peut en faire de nouvelles cartes modèles." },
+      ] },
+  ];
+  const LIB_NIV = ["Facile", "Moyen", "Difficile"];
+
+  // ---------------- mémoire locale (étoiles gagnées) ----------------
+  let etoiles = {};
+  try { etoiles = JSON.parse(localStorage.getItem("retronono-etoiles") || "{}"); } catch (e) { etoiles = {}; }
+  const sauve = () => { try { localStorage.setItem("retronono-etoiles", JSON.stringify(etoiles)); } catch (e) {} };
+
+  let jeu = 0, niv = 0;
+  const $ = id => document.getElementById(id);
+  const icone = (cells, c, s) => {
+    const w = Math.max(...cells.map(p => p[0])) + 1, h = Math.max(...cells.map(p => p[1])) + 1;
+    return `<svg width="${w * s}" height="${h * s}" viewBox="0 0 ${w * s} ${h * s}" aria-hidden="true">${cells.map(([x, y]) =>
+      `<rect x="${x * s}" y="${y * s}" width="${s - 1}" height="${s - 1}" fill="${c}"/><rect x="${x * s}" y="${y * s}" width="${s - 1}" height="2" fill="rgba(255,255,255,.45)"/>`).join("")}</svg>`;
+  };
+
+  const mobile = () => matchMedia("(max-width: 700px)").matches;
+  const doux = () => matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+  function centrerJeu() {
+    const c = $("jeux"), b = c.children[jeu]; if (!b || !mobile()) return;
+    c.scrollTo({ left: b.offsetLeft - (c.clientWidth - b.clientWidth) / 2, behavior: doux() });
+  }
+  function rendJeux() {
+    if ($("jeux").children.length) {          // déjà construites : on met juste à jour l'état
+      [...$("jeux").children].forEach((b, i) => {
+        b.setAttribute("aria-pressed", i === jeu);
+        b.querySelector(".etoiles").textContent = [0, 1, 2].map(n => etoiles[JEUX[i].id + n] ? "★" : "☆").join("");
+      });
+      $("points").innerHTML = JEUX.map((j, i) => `<span style="--c:${j.c}" class="${i === jeu ? "on" : ""}"></span>`).join("");
+      return;
+    }
+    $("jeux").innerHTML = JEUX.map((j, i) => {
+      const e = [0, 1, 2].map(n => etoiles[j.id + n] ? "★" : "☆").join("");
+      return `<button class="cartouche" style="--c:${j.c}" aria-pressed="${i === jeu}" data-i="${i}">
+        <span class="bande" aria-hidden="true"></span>
+        <span class="tete"><span class="nom">${i + 1}. ${j.nom}</span>${icone(j.piece, j.c, 9)}</span>
+        <span class="but">${j.but}</span><span class="etoiles" aria-label="Niveaux réussis">${e}</span></button>`;
+    }).join("");
+    $("jeux").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { jeu = +b.dataset.i; bip(660); maj(true); }));
+    // sur mobile : la carte arrêtée au centre du carrousel devient le jeu choisi
+    let attente = null;
+    $("jeux").addEventListener("scroll", () => {
+      if (!mobile()) return;
+      clearTimeout(attente);
+      attente = setTimeout(() => {
+        const c = $("jeux"), milieu = c.scrollLeft + c.clientWidth / 2;
+        let best = 0, d = 1e9;
+        [...c.children].forEach((b, i) => { const m = Math.abs(b.offsetLeft + b.clientWidth / 2 - milieu); if (m < d) { d = m; best = i; } });
+        if (best !== jeu) { jeu = best; bip(660); rendJeux(); rendNiveaux(); rendMission(false); rendGalerie(); }
+      }, 140);
+    }, { passive: true });
+    rendJeux();
+  }
+  function rendNiveaux() {
+    $("niveaux").innerHTML = LIB_NIV.map((l, n) =>
+      `<button aria-pressed="${n === niv}" data-n="${n}"><span class="st">${"★".repeat(n + 1)}${"☆".repeat(2 - n)}</span><span class="lib">${l}</span><span class="desc">${["Pour découvrir", "Un peu plus de défi", "Pour les champions"][n]}</span></button>`).join("");
+    $("niveaux").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { niv = +b.dataset.n; bip(880); maj(true); }));
+  }
+  function rendMission(defile) {
+    const j = JEUX[jeu], m = j.niveaux[niv], deja = etoiles[j.id + niv];
+    const el = $("mission"); el.style.setProperty("--c", j.c);
+    el.innerHTML = `
+      <div class="titre"><h3>${j.nom}</h3><span class="niv">${"★".repeat(niv + 1)}${"☆".repeat(2 - niv)} ${LIB_NIV[niv]}</span></div>
+      <p class="objectif" style="margin:0">${m.objectif}</p>
+      <div class="cols">
+        <div class="bloc"><h4>COMMENT JOUER</h4><ol>${m.etapes.map(e => `<li>${e}</li>`).join("")}</ol></div>
+        <div class="bloc"><h4>C'EST RÉUSSI QUAND</h4><p>${m.reussi}</p><h4 style="margin-top:8px">PIÈCES</h4><p>${m.pieces}</p></div>
+      </div>
+      <div class="bloc adulte"><h4>POUR L'ADULTE</h4><p>${m.adulte} On apprend : ${j.apprend}</p></div>
+      <div class="actions">
+        <button class="jaune jouer" id="jouer">▶ JOUER À L'ÉCRAN</button>
+        <button id="reussi">${deja ? "★ Encore réussi !" : "★ Défi réussi !"}</button>
+        <button id="hasard">Mission au hasard</button>
+        <button id="suivant">${niv < 2 ? "Niveau suivant" : "Jeu suivant"}</button>
+        <span class="bravo" id="bravo">${deja ? "Déjà réussi : bravo !" : ""}</span>
+      </div>`;
+    $("jouer").addEventListener("click", () => ouvreJeu());
+    $("reussi").addEventListener("click", () => {
+      etoiles[j.id + niv] = true; sauve(); fanfare(); rendJeux();
+      $("bravo").textContent = "BRAVO ! +1 étoile"; hero.saut(true);
+    });
+    $("hasard").addEventListener("click", () => { jeu = Math.floor(Math.random() * 5); niv = Math.floor(Math.random() * 3); bip(520); maj(true); });
+    $("suivant").addEventListener("click", () => { if (niv < 2) niv++; else { niv = 0; jeu = (jeu + 1) % 5; } bip(740); maj(true); });
+    if (defile) el.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" });
+  }
+
+  // ---------------- cartes images du jeu 5 ----------------
+  const IMAGES = [{"nom": "L'escalier", "niveau": 1, "w": 6, "h": 3, "pieces": [["O", 0, 0, 0], ["L", 0, 1, 0], ["J", 3, 1, 0]]}, {"nom": "Le bateau", "niveau": 1, "w": 6, "h": 3, "pieces": [["O", 2, 0, 0], ["Z", 0, 1, 0], ["S", 3, 1, 0]]}, {"nom": "Le carré", "niveau": 1, "w": 4, "h": 4, "pieces": [["O", 0, 0, 0], ["J", 1, 2, 3], ["I", 3, 0, 1], ["J", 0, 2, 0]]}, {"nom": "Le champignon", "niveau": 1, "w": 6, "h": 5, "pieces": [["I", 1, 0, 0], ["J", 2, 2, 2], ["L", 5, 2, 2], ["O", 2, 3, 0]]}, {"nom": "Le petit sapin", "niveau": 1, "w": 6, "h": 5, "pieces": [["O", 2, 0, 0], ["T", 2, 2, 2], ["T", 5, 2, 2], ["O", 2, 3, 0]]}, {"nom": "Le pont", "niveau": 1, "w": 8, "h": 3, "pieces": [["I", 0, 0, 0], ["I", 4, 0, 0], ["O", 0, 1, 0], ["O", 6, 1, 0]]}, {"nom": "La petite pyramide", "niveau": 2, "w": 8, "h": 4, "pieces": [["O", 3, 0, 0], ["T", 3, 2, 2], ["Z", 5, 1, 1], ["T", 7, 3, 2], ["I", 0, 3, 0]]}, {"nom": "La fleur", "niveau": 2, "w": 7, "h": 7, "pieces": [["Z", 1, 0, 0], ["I", 4, 0, 1], ["T", 5, 2, 3], ["Z", 0, 1, 0], ["T", 3, 2, 1], ["T", 2, 5, 0]]}, {"nom": "Le grand T", "niveau": 2, "w": 8, "h": 6, "pieces": [["O", 0, 0, 0], ["J", 2, 0, 0], ["I", 3, 0, 0], ["L", 5, 0, 0], ["I", 3, 2, 1], ["I", 4, 2, 1]]}, {"nom": "La maison", "niveau": 2, "w": 8, "h": 7, "pieces": [["O", 3, 0, 0], ["J", 2, 1, 0], ["T", 5, 3, 3], ["T", 1, 2, 1], ["L", 4, 4, 2], ["S", 5, 3, 0], ["O", 1, 5, 0], ["O", 5, 5, 0]]}, {"nom": "Le cœur", "niveau": 2, "w": 8, "h": 6, "pieces": [["O", 1, 0, 0], ["J", 4, 2, 3], ["S", 7, 0, 1], ["J", 0, 1, 0], ["J", 4, 1, 1], ["L", 4, 2, 0], ["Z", 1, 3, 0], ["S", 3, 4, 0]]}, {"nom": "Le poisson", "niveau": 2, "w": 10, "h": 5, "pieces": [["O", 3, 0, 0], ["J", 4, 2, 3], ["T", 6, 2, 3], ["L", 0, 1, 0], ["T", 9, 1, 1], ["T", 4, 3, 2], ["Z", 7, 2, 1], ["L", 3, 3, 0]]}, {"nom": "La voiture", "niveau": 3, "w": 10, "h": 5, "pieces": [["O", 2, 0, 0], ["J", 3, 2, 3], ["I", 5, 0, 1], ["Z", 1, 1, 1], ["J", 6, 1, 0], ["Z", 2, 2, 1], ["L", 7, 2, 0], ["S", 2, 3, 0], ["J", 6, 3, 0]]}, {"nom": "Le robot", "niveau": 3, "w": 8, "h": 9, "pieces": [["I", 2, 0, 1], ["J", 5, 1, 2], ["O", 3, 2, 0], ["J", 4, 4, 3], ["J", 1, 3, 1], ["L", 6, 5, 3], ["J", 3, 4, 1], ["J", 5, 6, 2], ["L", 0, 7, 0], ["J", 5, 7, 0]]}, {"nom": "La fusée", "niveau": 3, "w": 10, "h": 9, "pieces": [["O", 4, 0, 0], ["J", 3, 1, 0], ["I", 6, 1, 1], ["T", 3, 5, 3], ["L", 4, 5, 3], ["Z", 2, 5, 1], ["T", 5, 6, 2], ["O", 6, 5, 0], ["Z", 8, 6, 1], ["O", 2, 7, 0], ["J", 6, 8, 2]]}, {"nom": "Le château", "niveau": 3, "w": 8, "h": 7, "pieces": [["I", 0, 0, 1], ["L", 3, 0, 1], ["T", 5, 2, 3], ["I", 7, 0, 1], ["L", 2, 1, 1], ["L", 3, 3, 3], ["T", 6, 2, 1], ["T", 4, 4, 2], ["O", 0, 4, 0], ["L", 6, 4, 1], ["T", 7, 4, 1], ["L", 0, 5, 0]]}, {"nom": "Le chat", "niveau": 3, "w": 8, "h": 10, "pieces": [["I", 0, 0, 1], ["Z", 7, 0, 1], ["J", 1, 1, 0], ["O", 4, 2, 0], ["J", 6, 4, 3], ["O", 2, 3, 0], ["Z", 0, 4, 0], ["T", 4, 4, 1], ["T", 5, 6, 3], ["L", 3, 6, 1], ["J", 3, 6, 0], ["T", 2, 9, 2], ["S", 3, 8, 0], ["T", 7, 9, 2]]}, {"nom": "Le dinosaure", "niveau": 3, "w": 10, "h": 10, "pieces": [["O", 5, 0, 0], ["J", 6, 2, 3], ["T", 8, 2, 3], ["S", 6, 2, 1], ["Z", 4, 3, 1], ["I", 7, 3, 1], ["J", 0, 4, 0], ["S", 6, 4, 1], ["T", 8, 6, 3], ["J", 3, 7, 3], ["T", 1, 6, 0], ["S", 6, 6, 1], ["J", 6, 9, 3], ["O", 2, 8, 0]]}, {"nom": "Le grand sapin", "niveau": 4, "w": 10, "h": 11, "pieces": [["O", 4, 0, 0], ["T", 3, 1, 1], ["T", 6, 3, 3], ["J", 3, 4, 3], ["I", 5, 2, 1], ["T", 3, 5, 2], ["Z", 6, 4, 0], ["S", 5, 5, 1], ["S", 7, 5, 1], ["Z", 2, 6, 0], ["S", 0, 7, 0], ["Z", 6, 7, 1], ["T", 9, 8, 2], ["J", 4, 9, 2], ["I", 3, 10, 0]]}, {"nom": "Le bonhomme", "niveau": 4, "w": 10, "h": 11, "pieces": [["O", 3, 0, 0], ["O", 5, 0, 0], ["T", 4, 2, 1], ["J", 5, 2, 0], ["O", 1, 3, 0], ["L", 6, 3, 0], ["T", 0, 6, 3], ["L", 4, 4, 1], ["T", 6, 5, 2], ["T", 9, 4, 1], ["S", 4, 6, 0], ["Z", 3, 7, 1], ["I", 6, 7, 1], ["L", 8, 8, 1], ["L", 1, 9, 0]]}, {"nom": "L'arbre", "niveau": 4, "w": 10, "h": 10, "pieces": [["O", 2, 0, 0], ["J", 4, 0, 0], ["J", 7, 1, 2], ["T", 2, 2, 2], ["L", 6, 1, 0], ["T", 3, 2, 1], ["Z", 4, 2, 0], ["Z", 9, 2, 1], ["Z", 0, 3, 0], ["J", 4, 3, 0], ["J", 6, 5, 3], ["I", 2, 5, 0], ["O", 4, 6, 0], ["L", 2, 8, 0], ["J", 5, 8, 0]]}, {"nom": "Le camion", "niveau": 4, "w": 10, "h": 8, "pieces": [["O", 0, 0, 0], ["J", 2, 0, 0], ["J", 5, 1, 2], ["I", 0, 2, 0], ["L", 4, 4, 3], ["T", 6, 2, 0], ["Z", 9, 2, 1], ["Z", 0, 3, 0], ["T", 2, 3, 0], ["T", 6, 5, 3], ["S", 1, 4, 1], ["T", 5, 5, 2], ["L", 7, 4, 0], ["J", 1, 7, 3], ["O", 7, 6, 0]]}, {"nom": "La tortue", "niveau": 4, "w": 10, "h": 9, "pieces": [["O", 4, 0, 0], ["J", 3, 1, 0], ["T", 6, 3, 3], ["L", 3, 2, 1], ["Z", 1, 3, 1], ["J", 5, 4, 2], ["S", 6, 3, 0], ["Z", 4, 4, 1], ["O", 8, 4, 0], ["O", 1, 5, 0], ["T", 6, 6, 2], ["Z", 6, 5, 0], ["O", 0, 7, 0], ["I", 3, 7, 0], ["O", 8, 7, 0]]}, {"nom": "La pyramide", "niveau": 4, "w": 10, "h": 10, "pieces": [["O", 4, 0, 0], ["J", 3, 2, 0], ["J", 6, 3, 2], ["I", 2, 4, 0], ["L", 6, 6, 3], ["T", 2, 5, 0], ["Z", 5, 5, 1], ["L", 7, 5, 1], ["Z", 1, 6, 0], ["L", 9, 6, 1], ["T", 2, 8, 2], ["J", 5, 7, 0], ["Z", 3, 8, 0], ["I", 0, 9, 0], ["I", 6, 9, 0]]}, {"nom": "L'éléphant", "niveau": 4, "w": 10, "h": 9, "pieces": [["T", 1, 2, 3], ["Z", 2, 0, 0], ["J", 6, 1, 2], ["I", 7, 0, 1], ["S", 6, 1, 1], ["S", 9, 1, 1], ["I", 0, 2, 1], ["J", 4, 3, 2], ["L", 3, 4, 2], ["Z", 5, 3, 1], ["L", 6, 3, 0], ["I", 3, 4, 1], ["J", 5, 5, 0], ["J", 8, 6, 2], ["L", 1, 6, 1], ["J", 3, 8, 3], ["O", 7, 7, 0]]}, {"nom": "La montagne", "niveau": 4, "w": 10, "h": 10, "pieces": [["O", 4, 0, 0], ["J", 3, 1, 0], ["I", 6, 1, 1], ["T", 2, 5, 3], ["L", 3, 5, 3], ["L", 6, 3, 1], ["I", 7, 3, 1], ["S", 2, 5, 1], ["T", 3, 7, 3], ["I", 8, 5, 1], ["Z", 5, 6, 0], ["J", 1, 7, 1], ["S", 3, 7, 0], ["J", 8, 9, 3], ["O", 1, 8, 0], ["L", 3, 8, 0], ["O", 6, 8, 0]]}, {"nom": "Le papillon", "niveau": 4, "w": 10, "h": 10, "pieces": [["O", 0, 0, 0], ["J", 9, 0, 1], ["T", 2, 3, 3], ["L", 8, 1, 1], ["I", 9, 1, 1], ["O", 0, 2, 0], ["Z", 6, 2, 1], ["L", 1, 3, 0], ["J", 3, 5, 3], ["J", 0, 4, 0], ["S", 5, 4, 0], ["T", 9, 5, 2], ["O", 2, 6, 0], ["Z", 6, 6, 0], ["Z", 1, 7, 1], ["S", 7, 7, 1], ["S", 1, 8, 0], ["O", 8, 8, 0]]}, {"nom": "Le hibou", "niveau": 4, "w": 10, "h": 11, "pieces": [["O", 1, 0, 0], ["O", 7, 0, 0], ["I", 0, 1, 1], ["Z", 3, 1, 0], ["L", 5, 3, 3], ["I", 9, 1, 1], ["T", 3, 4, 3], ["S", 6, 3, 1], ["J", 2, 4, 1], ["S", 5, 4, 1], ["J", 6, 6, 3], ["I", 8, 4, 1], ["Z", 2, 5, 0], ["T", 3, 7, 2], ["T", 5, 8, 2], ["T", 5, 7, 0], ["J", 1, 10, 3], ["L", 8, 8, 1]]}, {"nom": "Le phare", "niveau": 4, "w": 10, "h": 14, "pieces": [["O", 4, 0, 0], ["T", 3, 1, 1], ["T", 6, 3, 3], ["L", 4, 5, 3], ["J", 4, 5, 2], ["J", 7, 4, 1], ["S", 4, 5, 1], ["S", 6, 6, 1], ["I", 3, 7, 1], ["Z", 4, 8, 0], ["L", 3, 9, 1], ["I", 4, 9, 1], ["Z", 7, 9, 1], ["I", 5, 10, 1], ["Z", 7, 11, 1], ["T", 2, 13, 2], ["Z", 2, 12, 0], ["T", 9, 13, 2]]}, {"nom": "Le robot géant", "niveau": 4, "w": 10, "h": 15, "pieces": [["I", 3, 0, 0], ["S", 4, 1, 1], ["Z", 6, 1, 1], ["L", 2, 5, 2], ["I", 3, 4, 1], ["O", 4, 4, 0], ["J", 5, 6, 3], ["J", 9, 5, 2], ["L", 1, 7, 3], ["J", 8, 5, 1], ["I", 0, 6, 1], ["T", 4, 8, 3], ["I", 9, 6, 1], ["T", 7, 8, 2], ["O", 2, 8, 0], ["T", 4, 9, 0], ["Z", 7, 9, 1], ["L", 4, 11, 2], ["Z", 3, 11, 1], ["Z", 7, 11, 1], ["L", 1, 13, 0], ["T", 8, 14, 2]]}, {"nom": "La grande fusée", "niveau": 4, "w": 10, "h": 16, "pieces": [["O", 4, 0, 0], ["J", 3, 1, 0], ["T", 6, 3, 3], ["I", 2, 2, 1], ["L", 5, 4, 2], ["Z", 7, 3, 1], ["J", 3, 5, 0], ["T", 7, 5, 1], ["S", 3, 6, 1], ["I", 4, 7, 1], ["L", 5, 9, 3], ["T", 2, 10, 3], ["L", 6, 8, 1], ["I", 7, 8, 1], ["I", 3, 10, 1], ["O", 1, 11, 0], ["L", 6, 12, 2], ["L", 6, 11, 0], ["T", 0, 14, 3], ["T", 6, 13, 2], ["T", 9, 12, 1], ["S", 2, 14, 0], ["Z", 5, 14, 0]]}, {"nom": "Le château fort", "niveau": 4, "w": 10, "h": 12, "pieces": [["I", 0, 0, 1], ["L", 3, 0, 1], ["T", 7, 2, 3], ["J", 8, 2, 3], ["L", 2, 1, 1], ["Z", 4, 2, 1], ["Z", 5, 2, 0], ["J", 5, 3, 0], ["O", 8, 3, 0], ["O", 0, 4, 0], ["T", 2, 6, 3], ["I", 4, 4, 1], ["I", 5, 5, 0], ["L", 7, 5, 0], ["O", 0, 6, 0], ["S", 6, 6, 1], ["T", 2, 7, 1], ["J", 3, 7, 0], ["S", 8, 7, 1], ["L", 8, 9, 3], ["T", 0, 10, 3], ["J", 6, 11, 3], ["S", 0, 10, 0], ["O", 8, 10, 0], ["I", 2, 11, 0]]}, {"nom": "La fusée géante", "niveau": 5, "w": 10, "h": 19, "pieces": [["O", 4, 0, 0], ["J", 3, 1, 0], ["T", 6, 3, 3], ["I", 2, 2, 1], ["L", 5, 4, 2], ["Z", 7, 3, 1], ["J", 3, 5, 0], ["T", 7, 5, 1], ["S", 3, 6, 1], ["I", 4, 7, 1], ["L", 5, 9, 3], ["T", 2, 10, 3], ["L", 6, 8, 1], ["I", 7, 8, 1], ["Z", 3, 10, 1], ["S", 3, 11, 0], ["Z", 6, 11, 1], ["J", 1, 12, 0], ["O", 7, 12, 0], ["T", 0, 15, 3], ["T", 5, 14, 2], ["J", 5, 15, 3], ["T", 9, 13, 1], ["Z", 3, 15, 0], ["Z", 3, 16, 1], ["S", 7, 16, 1]]}, {"nom": "Le grand bonhomme", "niveau": 5, "w": 10, "h": 20, "pieces": [["O", 3, 0, 0], ["J", 4, 2, 3], ["S", 7, 0, 1], ["L", 3, 1, 1], ["I", 4, 3, 0], ["L", 3, 6, 3], ["J", 6, 4, 1], ["J", 3, 6, 1], ["Z", 6, 6, 1], ["J", 6, 8, 3], ["T", 1, 7, 1], ["O", 3, 7, 0], ["S", 9, 7, 1], ["T", 0, 11, 3], ["I", 3, 9, 0], ["S", 9, 9, 1], ["I", 3, 10, 0], ["O", 3, 11, 0], ["O", 5, 11, 0], ["S", 2, 13, 0], ["Z", 5, 13, 0], ["L", 2, 17, 3], ["I", 6, 15, 1], ["I", 7, 15, 1], ["L", 3, 16, 1], ["I", 0, 19, 0], ["I", 6, 19, 0]]}, {"nom": "Le grand arbre", "niveau": 5, "w": 10, "h": 18, "pieces": [["O", 3, 0, 0], ["J", 4, 2, 3], ["I", 6, 0, 1], ["Z", 2, 1, 1], ["T", 7, 3, 3], ["S", 4, 2, 1], ["L", 1, 3, 1], ["T", 2, 3, 1], ["S", 6, 3, 1], ["Z", 8, 3, 1], ["J", 8, 5, 3], ["L", 4, 4, 1], ["Z", 4, 5, 0], ["O", 1, 6, 0], ["S", 6, 6, 0], ["J", 0, 7, 0], ["I", 3, 7, 1], ["I", 4, 7, 1], ["T", 5, 9, 3], ["L", 8, 9, 3], ["O", 7, 8, 0], ["J", 2, 10, 2], ["T", 7, 10, 2], ["L", 4, 13, 3], ["I", 4, 12, 1], ["L", 6, 14, 1], ["S", 2, 16, 0], ["I", 4, 17, 0]]}, {"nom": "Le château de la forêt", "niveau": 5, "w": 10, "h": 13, "pieces": [["I", 0, 0, 1], ["L", 3, 0, 1], ["Z", 4, 0, 0], ["T", 7, 2, 3], ["J", 8, 2, 3], ["I", 1, 1, 1], ["L", 3, 3, 3], ["J", 6, 2, 1], ["S", 3, 3, 1], ["S", 8, 3, 1], ["L", 8, 5, 3], ["T", 0, 6, 3], ["J", 3, 6, 3], ["T", 7, 5, 2], ["Z", 2, 5, 1], ["I", 5, 6, 0], ["L", 7, 6, 0], ["S", 1, 7, 1], ["I", 2, 7, 1], ["O", 7, 8, 0], ["J", 8, 10, 3], ["T", 0, 11, 3], ["O", 3, 10, 0], ["O", 5, 10, 0], ["J", 6, 12, 3], ["S", 0, 11, 0], ["O", 8, 11, 0], ["I", 2, 12, 0]]}, {"nom": "L'escalier géant", "niveau": 5, "w": 10, "h": 20, "pieces": [["O", 0, 0, 0], ["J", 1, 2, 1], ["T", 1, 5, 3], ["Z", 3, 4, 1], ["I", 0, 5, 1], ["S", 2, 6, 1], ["L", 4, 6, 1], ["S", 2, 8, 1], ["I", 5, 8, 1], ["T", 0, 11, 3], ["J", 2, 11, 3], ["I", 4, 9, 1], ["Z", 1, 11, 1], ["O", 2, 12, 0], ["J", 7, 13, 2], ["L", 2, 13, 1], ["T", 4, 15, 3], ["L", 5, 15, 3], ["L", 1, 14, 1], ["L", 2, 16, 3], ["J", 6, 16, 3], ["Z", 5, 15, 1], ["S", 3, 16, 1], ["O", 8, 16, 0], ["O", 0, 17, 0], ["T", 5, 17, 0], ["L", 0, 18, 0], ["S", 3, 18, 0], ["J", 9, 19, 2], ["I", 5, 19, 0]]}, {"nom": "Le plateau complet", "niveau": 5, "w": 10, "h": 20, "pieces": [["O", 0, 0, 0], ["T", 2, 0, 0], ["O", 5, 0, 0], ["L", 9, 1, 2], ["T", 2, 1, 1], ["S", 5, 1, 1], ["J", 7, 3, 3], ["I", 9, 1, 1], ["I", 0, 2, 1], ["T", 3, 4, 3], ["J", 7, 2, 1], ["T", 1, 5, 3], ["Z", 4, 4, 1], ["S", 6, 4, 1], ["L", 8, 4, 1], ["S", 9, 4, 1], ["I", 2, 5, 1], ["J", 1, 6, 1], ["Z", 4, 6, 1], ["L", 6, 6, 1], ["L", 2, 7, 1], ["Z", 6, 7, 0], ["L", 8, 9, 3], ["J", 4, 8, 0], ["S", 1, 9, 1], ["I", 3, 9, 1], ["Z", 7, 9, 0], ["J", 1, 12, 3], ["S", 5, 10, 1], ["T", 5, 10, 0], ["I", 0, 11, 1], ["O", 7, 11, 0], ["I", 9, 11, 1], ["L", 2, 12, 0], ["T", 7, 13, 2], ["I", 1, 13, 1], ["Z", 8, 13, 1], ["O", 2, 14, 0], ["O", 4, 14, 0], ["J", 5, 16, 3], ["L", 1, 15, 1], ["S", 7, 15, 0], ["S", 3, 16, 1], ["Z", 3, 16, 0], ["T", 9, 16, 1], ["O", 6, 17, 0], ["O", 0, 18, 0], ["J", 2, 18, 0], ["Z", 4, 18, 0], ["D", 9, 19, 2]]}];
+  const CELL = { I: [[0,0],[1,0],[2,0],[3,0]], O: [[0,0],[1,0],[0,1],[1,1]], T: [[0,0],[1,0],[2,0],[1,1]], D: [[0,0],[1,0],[2,0],[1,1]],
+    S: [[1,0],[2,0],[0,1],[1,1]], Z: [[0,0],[1,0],[1,1],[2,1]], J: [[0,0],[0,1],[1,1],[2,1]], L: [[2,0],[0,1],[1,1],[2,1]] };
+  const COUL = { I: "#3CC8F0", O: "#F7D51D", T: "#8B2F8C", D: "#D9A72E", S: "#E5412B", Z: "#7AB536", J: "#EE6FB5", L: "#F39325" };
+  const NOMS = { I: "I", O: "O", T: "T", D: "T doré", S: "S", Z: "Z", J: "J", L: "L" };
+  const rot = (c, k) => { let r = c.map(p => p.slice()); for (let i = 0; i < k; i++) r = r.map(([x, z]) => [-z, x]); return r; };
+  let filtre = 0, imageChoisie = 0;
+  function svgImage(im, silhouette, grand, recadre) {
+    const S = 10, ox = Math.floor((10 - im.w) / 2), oy = 20 - im.h;
+    let vb = `-1 -1 ${10 * S + 2} ${20 * S + 2}`;
+    if (recadre) {                         // vignette : le dessin et une case de marge autour
+      const x0 = Math.max(0, ox - 1), y0 = Math.max(0, oy - 1), x1 = Math.min(10, ox + im.w + 1), y1 = Math.min(20, oy + im.h + 1);
+      vb = `${x0 * S - 1} ${y0 * S - 1} ${(x1 - x0) * S + 2} ${(y1 - y0) * S + 2}`;
+    }
+    let out = `<svg viewBox="${vb}" role="img" aria-label="${im.nom}${silhouette ? ", silhouette" : ""}">`;
+    out += `<rect x="0" y="0" width="${10 * S}" height="${20 * S}" fill="#F3F3F0"/>`;
+    for (let i = 1; i < 10; i++) out += `<line x1="${i * S}" y1="0" x2="${i * S}" y2="${20 * S}" stroke="#C9CCD1" stroke-width="0.6"/>`;
+    for (let j = 1; j < 20; j++) out += `<line x1="0" y1="${j * S}" x2="${10 * S}" y2="${j * S}" stroke="#C9CCD1" stroke-width="0.6"/>`;
+    im.pieces.forEach(([t, i, j, k]) => {
+      const cs = rot(CELL[t], k).map(([x, z]) => [ox + i + x, oy + j + z]), set = new Set(cs.map(c => c.join(",")));
+      const fill = silhouette ? "#6E6596" : COUL[t];
+      cs.forEach(([x, z]) => { out += `<rect x="${x * S}" y="${z * S}" width="${S}" height="${S}" fill="${fill}"/>`;
+        if (!silhouette) out += `<rect x="${x * S}" y="${z * S}" width="${S}" height="1.6" fill="rgba(255,255,255,.4)"/>`; });
+      if (!silhouette) {        // contour de chaque pièce : on voit où elle commence et où elle finit
+        cs.forEach(([x, z]) => {
+          const e = (dx, dz, x1, y1, x2, y2) => { if (!set.has([x + dx, z + dz].join(","))) out += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#1A1433" stroke-width="${grand ? 1.1 : 1.4}" stroke-linecap="square"/>`; };
+          e(0, -1, x * S, z * S, (x + 1) * S, z * S); e(0, 1, x * S, (z + 1) * S, (x + 1) * S, (z + 1) * S);
+          e(-1, 0, x * S, z * S, x * S, (z + 1) * S); e(1, 0, (x + 1) * S, z * S, (x + 1) * S, (z + 1) * S);
+        });
+      }
+    });
+    out += `<rect x="0" y="0" width="${10 * S}" height="${20 * S}" fill="none" stroke="#1A1433" stroke-width="1.2"/></svg>`;
+    return out;
+  }
+  const blocsNiveau = n => "■".repeat(n) + "□".repeat(5 - n);
+  function rendGalerie() {
+    const bloc = $("bloc-galerie"); bloc.hidden = JEUX[jeu].id !== "images";
+    if (bloc.hidden) return;
+    const sil = niv === 1;                 // niveau ★★ du jeu 5 : silhouette seulement
+    $("filtres").innerHTML = `<span>Difficulté :</span>` + [0, 1, 2, 3, 4, 5].map(n =>
+      `<button aria-pressed="${n === filtre}" data-f="${n}"><span class="fn">${n === 0 ? "Toutes" : "Niveau " + n}</span><span class="fb">${n === 0 ? IMAGES.length : blocsNiveau(n)}</span></button>`).join("");
+    $("filtres").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { filtre = +b.dataset.f; bip(700); rendGalerie(); }));
+    const liste = IMAGES.map((im, i) => ({ im, i })).filter(o => !filtre || o.im.niveau === filtre);
+    if (!liste.some(o => o.i === imageChoisie)) imageChoisie = liste[0].i;
+    $("galerie").innerHTML = liste.map(({ im, i }) =>
+      `<button class="carte" aria-pressed="${i === imageChoisie}" data-i="${i}">${svgImage(im, sil, false, true)}<span>${im.nom}</span><span class="niv5" aria-label="difficulté ${im.niveau} sur 5">${blocsNiveau(im.niveau)}</span></button>`).join("");
+    $("galerie").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { imageChoisie = +b.dataset.i; bip(820); rendGalerie();
+      $("zoom").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" }); }));
+    const im = IMAGES[imageChoisie], compte = {};
+    im.pieces.forEach(([t]) => compte[t] = (compte[t] || 0) + 1);
+    $("zoom").innerHTML = `<div class="vues"><div class="vue-grande">${svgImage(im, sil, true, true)}</div>
+        <figure class="vue-plateau">${svgImage(im, sil, false)}<figcaption>Sur le plateau</figcaption></figure></div>
+      <div class="info">
+        <h3>${im.nom}</h3>
+        <div class="niv5" style="color:var(--gold)">Difficulté ${blocsNiveau(im.niveau)} · ${im.pieces.length} pièces · ${im.pieces.length * 4} cases</div>
+        <p style="margin:0">${sil ? "Niveau ★★ : on ne voit que la silhouette. Trouve quelles pièces la remplissent !" : niv === 2 ? "Niveau ★★★ : inspire-toi de cette image pour inventer la tienne, puis fais-la deviner." : "Niveau ★ : pose chaque pièce à sa place, de la même couleur, dans le même sens. L'image se construit en bas du plateau."}</p>
+        <div class="bloc"><h4>PIÈCES À PRÉPARER</h4><div class="liste-pieces">${Object.keys(COUL).filter(t => compte[t]).map(t =>
+          `<span>${icone(CELL[t], COUL[t], 7)} ${compte[t]} × ${NOMS[t]}</span>`).join("")}</div></div>
+      </div>`;
+  }
+
+  function maj(defile) { rendJeux(); rendNiveaux(); rendMission(defile); rendGalerie(); centrerJeu(); }
+
+  // ---------------- son : musique chiptune (WebAudio, jouée à la demande) ----------------
+  let ctx = null, maitre = null, joue = false, muet = false, prochain = 0, pas = 0, minuteur = null;
+  const NOTE = n => { const m = /^([A-G])(#?)(\d)$/.exec(n); const i = { C: -9, D: -7, E: -5, F: -4, G: -2, A: 0, B: 2 }[m[1]] + (m[2] ? 1 : 0);
+    return 440 * Math.pow(2, (i + (+m[3] - 4) * 12) / 12); };
+  // mélodie traditionnelle russe « Korobeiniki » (1861, domaine public), arrangement original ; durée en croches
+  const MELODIE = [["E5",2],["B4",1],["C5",1],["D5",2],["C5",1],["B4",1],["A4",2],["A4",1],["C5",1],["E5",2],["D5",1],["C5",1],
+    ["B4",3],["C5",1],["D5",2],["E5",2],["C5",2],["A4",2],["A4",2],[null,2],
+    [null,1],["D5",2],["F5",1],["A5",2],["G5",1],["F5",1],["E5",3],["C5",1],["E5",2],["D5",1],["C5",1],
+    ["B4",2],["B4",1],["C5",1],["D5",2],["E5",2],["C5",2],["A4",2],["A4",2],[null,2]];
+  const BASSE = ["E2","E2","A2","A2","E2","E2","A2","A2","D2","D2","C2","C2","E2","E2","A2","A2"];   // une note par demi-mesure
+  const CROCHE = 60 / 150 / 2;
+  const sequence = []; { let t = 0; MELODIE.forEach(([n, d]) => { sequence.push({ t, n, d }); t += d; }); }
+  const LONG = 64;      // 8 mesures de 8 croches
+  const ICO = {
+    play: '<svg class="ico" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1h2v1h1v1h1v1h1v1h1v2H8v1H7v1H6v1H5v1H3z" fill="currentColor"/></svg>',
+    pause: '<svg class="ico" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1h3v10H2zM7 1h3v10H7z" fill="currentColor"/></svg>',
+    son: '<svg class="ico" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 4h2v4H1zM3 3h1v6H3zM4 2h1v8H4zM5 1h1v10H5zM8 3h1v1H8zM9 4h1v4H9zM8 8h1v1H8zM10 2h1v1h-1zM11 3h1v6h-1zM10 9h1v1h-1z" fill="currentColor"/></svg>',
+    muet: '<svg class="ico" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 4h2v4H1zM3 3h1v6H3zM4 2h1v8H4zM5 1h1v10H5zM7 4h1v1H7zM8 5h1v1H8zM9 6h1v1H9zM10 7h1v1h-1zM10 4h1v1h-1zM9 5h1v1H9zM8 6h1v1H8zM7 7h1v1H7z" fill="currentColor"/></svg>'
+  };
+  function majBoutonsSon() {
+    $("ico-musique").innerHTML = joue ? ICO.pause : ICO.play;
+    $("musique").setAttribute("aria-pressed", String(joue)); $("musique").setAttribute("aria-label", joue ? "Pause : musique et bruitages arrêtés" : "Lancer la musique et les bruitages");
+    $("ico-muet").innerHTML = muet ? ICO.muet : ICO.son;
+    $("muet").setAttribute("aria-pressed", String(muet)); $("muet").setAttribute("aria-label", muet ? "Remettre le son" : "Couper le son");
+  }
+  // iPhone : le son Web Audio est coupé par l'interrupteur silencieux, sauf si un élément <audio> joue.
+  // On lance donc en boucle un son muet au premier geste, et on demande la session audio « lecture ».
+  let silence = null;
+  function sonMuet() {
+    const n = 800, b = new ArrayBuffer(44 + n), v = new DataView(b), w = (o, t) => [...t].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+    w(0, "RIFF"); v.setUint32(4, 36 + n, true); w(8, "WAVE"); w(12, "fmt "); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, 8000, true); v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true); w(36, "data"); v.setUint32(40, n, true);
+    for (let i = 0; i < n; i++) v.setUint8(44 + i, 128);
+    return URL.createObjectURL(new Blob([b], { type: "audio/wav" }));
+  }
+  function deverrouiller() {
+    try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
+    initAudio();
+    if (ctx.state !== "running") ctx.resume();
+    try {
+      if (!silence) { silence = new Audio(sonMuet()); silence.loop = true; silence.setAttribute("playsinline", ""); }
+      const p = silence.play(); if (p && p.catch) p.catch(() => {});
+    } catch (e) {}
+    // petit « tic » muet joué tout de suite : débloque le son sur les anciens iOS
+    const o = ctx.createOscillator(), g = ctx.createGain(); g.gain.value = 0; o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.01);
+  }
+  ["touchend", "click", "keydown"].forEach(ev => document.addEventListener(ev, deverrouiller, { capture: true, passive: true }));
+  function initAudio() {
+    if (ctx) return;
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    maitre = ctx.createGain(); maitre.connect(ctx.destination); reglerVolume();
+  }
+  function reglerVolume() { if (maitre) maitre.gain.setTargetAtTime(muet ? 0 : 0.3, ctx.currentTime, 0.02); }
+  function voix(type, f, t0, dur, vol) {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type; o.frequency.value = f; o.connect(g); g.connect(maitre);
+    g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(vol, t0 + 0.008); g.gain.setTargetAtTime(vol * 0.6, t0 + 0.03, 0.05);
+    g.gain.setTargetAtTime(0, t0 + dur * 0.85, 0.02); o.start(t0); o.stop(t0 + dur + 0.1);
+  }
+  let bruit = null;
+  function charleston(t0, vol) {
+    if (!bruit) { bruit = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate); const d = bruit.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+    const s = ctx.createBufferSource(), g = ctx.createGain(), f = ctx.createBiquadFilter();
+    f.type = "highpass"; f.frequency.value = 6000; s.buffer = bruit; s.connect(f); f.connect(g); g.connect(maitre);
+    g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.04); s.start(t0);
+  }
+  function planifier() {
+    while (prochain < ctx.currentTime + 0.15) {
+      const p = pas % LONG;
+      sequence.filter(e => e.t === p && e.n).forEach(e => voix("square", NOTE(e.n), prochain, e.d * CROCHE, 0.16));
+      const b = BASSE[Math.floor(p / 4)]; voix("triangle", NOTE(b) * (p % 2 ? 2 : 1), prochain, CROCHE * 0.9, 0.32);
+      if (p % 2 === 1) charleston(prochain, 0.05);
+      prochain += CROCHE; pas++;
+    }
+  }
+  function lancer() {
+    deverrouiller(); joue = true;
+    if (muet) { muet = false; reglerVolume(); }        // lancer la musique remet le son
+    prochain = ctx.currentTime + 0.08; pas = 0;
+    clearInterval(minuteur); minuteur = setInterval(planifier, 25);
+    majBoutonsSon();
+  }
+  function arreter() { joue = false; clearInterval(minuteur); majBoutonsSon(); }
+  $("musique").addEventListener("click", () => joue ? arreter() : lancer());
+  $("muet").addEventListener("click", () => { muet = !muet; if (ctx) reglerVolume(); majBoutonsSon(); });   // coupe musique ET bruitages
+  majBoutonsSon();
+  function bip(f) { if (!ctx || muet || !joue) return; voix("square", f, ctx.currentTime, 0.07, 0.12); }
+  function fanfare() { deverrouiller(); if (muet || !joue) return; const t = ctx.currentTime;
+    ["C5", "E5", "G5", "C6"].forEach((n, i) => voix("square", NOTE(n), t + i * 0.09, i === 3 ? 0.35 : 0.09, 0.16)); }
+
+  // ---------------- bandeau animé (canvas en pixels) ----------------
+  const cv = $("bandeau"), g = cv.getContext("2d"), W = 320, H = 96, SOL = 80, CASE = 6;
+  const reduit = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const COULEURS = ["#3CC8F0", "#F7D51D", "#B04BB2", "#E5412B", "#7AB536", "#EE6FB5", "#F39325"];
+  const FORMES = [[[0,0],[1,0],[0,1],[1,1]], [[0,0],[1,0],[2,0],[1,1]], [[0,0],[0,1],[1,1]], [[0,0],[1,0]], [[0,0],[0,1]]];
+  let dx = 0, score = 0, t = 0, obstacles = [], prochainObs = 120, etincelles = [];
+  const hero = { x: 56, y: SOL, vy: 0, auSol: true,
+    saut(fort) { if (this.auSol) { this.vy = fort ? -4.2 : -3.4; this.auSol = false; bip(990); } } };
+  cv.addEventListener("click", () => hero.saut(false));
+
+  function bloc(x, y, c) {
+    g.fillStyle = c; g.fillRect(x, y, CASE, CASE);
+    g.fillStyle = "rgba(255,255,255,.45)"; g.fillRect(x, y, CASE, 1); g.fillRect(x, y, 1, CASE);
+    g.fillStyle = "rgba(0,0,0,.35)"; g.fillRect(x, y + CASE - 1, CASE, 1); g.fillRect(x + CASE - 1, y, 1, CASE);
+  }
+  function sapin(x, base, h, c) {
+    g.fillStyle = c;
+    for (let i = 0; i < h; i += 2) { const w = Math.floor((i / h) * h * 0.55) + 1; g.fillRect(Math.round(x - w / 2), base - h + i, w, 2); }
+    g.fillStyle = "#3B2416"; g.fillRect(Math.round(x) - 1, base, 2, 3);
+  }
+  function dessine() {
+    // ciel en bandes
+    const bandes = ["#1B1240", "#24185A", "#2F1F6E", "#3B2A80", "#4A3792"];
+    bandes.forEach((c, i) => { g.fillStyle = c; g.fillRect(0, i * 13, W, 13); });
+    g.fillStyle = "#5A47A6"; g.fillRect(0, 65, W, 15);
+    // lune pixel
+    g.fillStyle = "#FFE9A8"; g.fillRect(262, 12, 12, 12); g.fillStyle = "#4A3792"; g.fillRect(268, 12, 6, 6);
+    // sapins, deux plans
+    for (let k = -1; k < 12; k++) { const x = ((k * 34 - dx * 0.25) % (34 * 11) + 34 * 11) % (34 * 11) - 20; sapin(x, SOL - 6, 22 + (k % 3) * 4, "#2C6B4A"); }
+    for (let k = -1; k < 9; k++) { const x = ((k * 47 + 12 - dx * 0.55) % (47 * 8) + 47 * 8) % (47 * 8) - 24; sapin(x, SOL, 30 + (k % 2) * 6, "#1E6B30"); }
+    // sol
+    g.fillStyle = "#7AB536"; g.fillRect(0, SOL, W, 3);
+    g.fillStyle = "#5C3A1E"; g.fillRect(0, SOL + 3, W, H - SOL - 3);
+    g.fillStyle = "#6E4626"; for (let x = -((dx | 0) % 12); x < W; x += 12) g.fillRect(x, SOL + 8, 6, 2);
+    // obstacles
+    obstacles.forEach(o => o.cells.forEach(([a, b]) => bloc(Math.round(o.x + a * CASE), Math.round(o.y - (o.h - b) * CASE), o.c)));
+    // héros : un petit T doré
+    const hx = hero.x, hy = Math.round(hero.y), pied = Math.floor(t / 6) % 2;
+    [[0, 2], [1, 2], [2, 2], [1, 1]].forEach(([a, b]) => bloc(hx + a * CASE, hy - (b + 1) * CASE - 3, "#F2B92E"));
+    g.fillStyle = "#1A1433"; g.fillRect(hx + 8, hy - 3 * CASE - 3 + 2, 1, 2); g.fillRect(hx + 11, hy - 3 * CASE - 3 + 2, 1, 2);
+    g.fillStyle = "#1A1433";
+    if (hero.auSol) { g.fillRect(hx + 7, hy - 3, 1, 3 - pied); g.fillRect(hx + 10, hy - 3, 1, 2 + pied); }
+    else { g.fillRect(hx + 6, hy - 3, 2, 1); g.fillRect(hx + 10, hy - 3, 2, 1); }
+    // étincelles
+    etincelles.forEach(e => { g.fillStyle = e.c; g.fillRect(Math.round(e.x), Math.round(e.y), 2, 2); });
+    // score
+    g.font = '8px "Press Start 2P", monospace'; g.fillStyle = "#FFFFFF"; g.textBaseline = "top";
+    g.fillText("SCORE " + String(score).padStart(4, "0"), 8, 8);
+  }
+  function avance() {
+    t++; dx += 1.4;
+    // héros
+    if (!hero.auSol) { hero.vy += 0.17; hero.y += hero.vy; if (hero.y >= SOL) { hero.y = SOL; hero.vy = 0; hero.auSol = true; } }
+    // pièces qui tombent du ciel puis défilent
+    prochainObs -= 1.4;
+    if (prochainObs <= 0) {
+      const f = FORMES[Math.floor(Math.random() * FORMES.length)], h = Math.max(...f.map(p => p[1])) + 1;
+      obstacles.push({ x: W + 10, y: -10, vy: 0, cells: f, h, c: COULEURS[Math.floor(Math.random() * COULEURS.length)], passe: false, pose: false });
+      prochainObs = 110 + Math.random() * 90;
+    }
+    obstacles.forEach(o => {
+      o.x -= 1.4;
+      if (!o.pose) { o.vy += 0.12; o.y += o.vy; if (o.y >= SOL) { o.y = SOL; o.pose = true; } }
+      const devant = o.x - (hero.x + 3 * CASE);
+      if (devant > 0 && devant < 14 && o.pose) hero.saut(false);
+      if (!o.passe && o.x + 3 * CASE < hero.x) { o.passe = true; score += 10;
+        for (let i = 0; i < 6; i++) etincelles.push({ x: hero.x + 9, y: hero.y - 20, vx: Math.random() * 2 - 1, vy: -Math.random() * 1.5 - 0.5, v: 30, c: COULEURS[i % 7] }); }
+    });
+    obstacles = obstacles.filter(o => o.x > -30);
+    etincelles.forEach(e => { e.x += e.vx; e.y += e.vy; e.vy += 0.05; e.v--; }); etincelles = etincelles.filter(e => e.v > 0);
+  }
+  let dernier = performance.now(), acc = 0;
+  function boucle(now) {
+    acc += Math.min(100, now - dernier); dernier = now;
+    while (acc >= 1000 / 60) { avance(); acc -= 1000 / 60; }
+    dessine(); requestAnimationFrame(boucle);
+  }
+  if (reduit) { obstacles.push({ x: 150, y: SOL, vy: 0, cells: FORMES[0], h: 2, c: COULEURS[0], passe: false, pose: true }); dessine(); }
+  else requestAnimationFrame(boucle);
+  if (document.fonts) document.fonts.ready.then(() => dessine());
+
+  const ouvreJeu = (() => {   // module du jeu, isolé du reste de la page
+  // =====================================================================
+  //  LE JEU JOUABLE : plateau 10 × 20, pièces, 5 modes × 3 niveaux
+  //  la pièce choisie apparaît en transparence : flèches pour la déplacer, ⟳ pour tourner, ✔ pour poser
+  //  commandes : écran tactile, souris, clavier, manette, borne d'arcade (touches MAME)
+  // =====================================================================
+  const PC = {   // pièces : cases (x vers la droite, y vers le bas) et couleurs du jeu imprimé
+    I: { c: [[0,0],[1,0],[2,0],[3,0]], coul: "#3CC8F0", nom: "I", stock: 7 },
+    O: { c: [[0,0],[1,0],[0,1],[1,1]], coul: "#F7D51D", nom: "O", stock: 7 },
+    T: { c: [[0,0],[1,0],[2,0],[1,1]], coul: "#AE96D4", nom: "T", stock: 7 },
+    S: { c: [[1,0],[2,0],[0,1],[1,1]], coul: "#E5412B", nom: "S", stock: 7 },
+    Z: { c: [[0,0],[1,0],[1,1],[2,1]], coul: "#7AB536", nom: "Z", stock: 7 },
+    J: { c: [[0,0],[0,1],[1,1],[2,1]], coul: "#EE6FB5", nom: "J", stock: 7 },
+    L: { c: [[2,0],[0,1],[1,1],[2,1]], coul: "#F39325", nom: "L", stock: 7 },
+    D: { c: [[0,0],[1,0],[2,0],[1,1]], coul: "#F4F4F0", nom: "T trophée", stock: 1, brille: true },
+  };
+  const TYPES7 = ["I", "O", "T", "S", "Z", "J", "L"];
+  const NOMS_COUL = { I: "cyan", O: "jaune", T: "lilas", S: "rouge", Z: "vert", J: "rose", L: "orange", D: "blanc brillant" };
+  const W = 10, H = 20;
+  const tourneP = (c, k) => { let r = c.map(p => p.slice()); for (let i = 0; i < ((k % 4) + 4) % 4; i++) r = r.map(([x, y]) => [-y, x]); return r; };
+  const casesDe = (t, x, y, r) => tourneP(PC[t].c, r).map(([a, b]) => [x + a, y + b]);
+  const cle = (x, y) => x + "," + y;
+  const melange = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  function ancre(t, r, cx, cy) {     // la case visée est au centre de la pièce
+    const c = tourneP(PC[t].c, r);
+    const mx = Math.round(c.reduce((s, p) => s + p[0], 0) / 4 - 0.01), my = Math.round(c.reduce((s, p) => s + p[1], 0) / 4 - 0.01);
+    return [cx - mx, cy - my];
+  }
+  // forme normalisée (pour comparer deux pièces quel que soit l'ancrage)
+  const formeNorm = cs => { const mx = Math.min(...cs.map(p => p[0])), my = Math.min(...cs.map(p => p[1]));
+    return cs.map(([x, y]) => cle(x - mx, y - my)).sort().join("|"); };
+
+  const G = {
+    ouvert: false, mode: null, niv: 0, grille: null, poses: [], stock: {}, sel: null, rot: 0,
+    curseur: [4, 9], survol: null, zone: null, cibles: null, modele: null, modeleVisible: true,
+    message: "", fini: false, tour: 0, sac: [], courante: null, devine: false, score: 0, essais: 0,
+    lignes: 0, image: null, verrou: null, confirme: null, revoir: 2, idPose: 0, historique: [],
+  };
+  const elJ = id => document.getElementById(id);
+
+  // ---------------- règles de pose ----------------
+  function libre(cs) { return cs.every(([x, y]) => x >= 0 && x < W && y >= 0 && y < H && !G.grille[y][x]); }
+  function raisonInvalide(t, cs) {
+    if (!libre(cs)) return "Ça déborde ou ça chevauche une pièce.";
+    if (G.zone && !cs.every(([x, y]) => G.zone.has(cle(x, y)))) return "Pose la pièce dans la zone en pointillés.";
+    if (G.mode === "lignes") {      // la pièce doit reposer sur le fond ou sur une autre pièce
+      const pose = cs.some(([x, y]) => y === H - 1 || (G.grille[y + 1] && G.grille[y + 1][x] && !cs.some(([a, b]) => a === x && b === y + 1)));
+      if (!pose) return "Comme dans le vrai Tetris : la pièce doit reposer sur le fond ou sur une autre pièce.";
+    }
+    if (G.mode === "pioche" && G.niv >= 1 && G.poses.length) {
+      const touche = cs.some(([x, y]) => [[1,0],[-1,0],[0,1],[0,-1]].some(([dx, dy]) => { const yy = y + dy, xx = x + dx; return yy >= 0 && yy < H && xx >= 0 && xx < W && G.grille[yy][xx]; }));
+      if (!touche) return "Au niveau 2, la pièce doit toucher une pièce déjà posée.";
+    }
+    if (t === "D" && G.mode === "puzzle" && G.niv === 2 && TYPES7.some(k => G.stock[k] > 0)) return "Le T trophée se pose en dernier, quand toutes les autres pièces sont posées.";
+    return null;
+  }
+  function peutPoser(t, r, x, y) { return !raisonInvalide(t, casesDe(t, x, y, r)); }
+  function poser(t, r, x, y, sansVerif) {
+    const cs = casesDe(t, x, y, r);
+    if (!sansVerif) { const pb = raisonInvalide(t, cs); if (pb) { dire(pb); bip(180); return false; } }
+    return poserCases(t, r, cs);
+  }
+  function poserCases(t, r, cs) {
+    const x = Math.min(...cs.map(c => c[0])), y = Math.min(...cs.map(c => c[1]));
+    const p = { id: ++G.idPose, t, r, x, y, cs, joueur: G.tour % 2 };
+    G.poses.push(p); cs.forEach(([a, b]) => G.grille[b][a] = p);
+    if (G.stock[t] !== undefined) G.stock[t]--;
+    G.historique.push(p.id); bip(660);
+    apresPose(p);
+    return true;
+  }
+  function retirer(p) {
+    G.poses = G.poses.filter(q => q !== p); p.cs.forEach(([a, b]) => G.grille[b][a] = null);
+    if (G.stock[p.t] !== undefined) G.stock[p.t]++;
+    bip(440);
+  }
+  function piecesPossibles(t) {   // existe-t-il une place valide pour ce type ?
+    for (let r = 0; r < 4; r++) for (let y = 0; y < H; y++) for (let x = -1; x < W; x++) if (peutPoser(t, r, x, y)) return true;
+    return false;
+  }
+
+  // ---------------- modes ----------------
+  const OBJ = {};
+  function rect(x0, y0, w, h) { const s = new Set(); for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) s.add(cle(x, y)); return s; }
+  function stockTous(avecTrophee) { const s = {}; TYPES7.forEach(t => s[t] = 7); if (avecTrophee) s.D = 1; return s; }
+  function tirerSac(n, sansTrophee) { const sac = []; TYPES7.forEach(t => { for (let i = 0; i < 7; i++) sac.push(t); }); melange(sac); return n ? sac.slice(0, n) : sac; }
+  function genModele(n) {          // n pièces posées au hasard dans la moitié haute, collées entre elles
+    for (let essai = 0; essai < 400; essai++) {
+      const occ = new Set(), pieces = [];
+      for (let k = 0; k < n; k++) {
+        let ok = false;
+        for (let e = 0; e < 200 && !ok; e++) {
+          const t = TYPES7[Math.floor(Math.random() * 7)], r = Math.floor(Math.random() * 4);
+          const x = 1 + Math.floor(Math.random() * 8), y = 1 + Math.floor(Math.random() * 7);
+          const cs = casesDe(t, x, y, r);
+          if (!cs.every(([a, b]) => a >= 0 && a < W && b >= 0 && b < 10 && !occ.has(cle(a, b)))) continue;
+          if (k > 0 && !cs.some(([a, b]) => [[1,0],[-1,0],[0,1],[0,-1]].some(([dx, dy]) => occ.has(cle(a + dx, b + dy))))) continue;
+          cs.forEach(([a, b]) => occ.add(cle(a, b))); pieces.push({ t, r, x, y, cs }); ok = true;
+        }
+        if (!ok) break;
+      }
+      if (pieces.length === n) return pieces;
+    }
+    return [];
+  }
+  function zoneMot(cs) {           // « en haut à gauche », « au milieu »… dans la moitié basse
+    const cx = cs.reduce((s, p) => s + p[0], 0) / 4, cy = cs.reduce((s, p) => s + p[1], 0) / 4 - 10;
+    const v = cy < 3.4 ? "en haut" : cy > 6.1 ? "en bas" : "au milieu", h = cx < 3.4 ? "à gauche" : cx > 5.6 ? "à droite" : "";
+    return v === "au milieu" && !h ? "au milieu" : v === "au milieu" ? "au milieu " + h : (v + (h ? " " + h : " au centre"));
+  }
+  function sensMot(t, r) {
+    const c = tourneP(PC[t].c, r), w = Math.max(...c.map(p => p[0])) - Math.min(...c.map(p => p[0])) + 1;
+    if (t === "O") return "";
+    if (t === "I" || t === "S" || t === "Z") return w > 2 ? "couché" : "debout";
+    // T, L, J : où se trouve la case qui dépasse
+    const mx = Math.min(...c.map(p => p[0])), my = Math.min(...c.map(p => p[1]));
+    const n = c.map(([x, y]) => [x - mx, y - my]), h = Math.max(...n.map(p => p[1])) + 1;
+    if (t === "T") { if (w === 3) return n.some(([x, y]) => y === 1 && x === 1) && n.filter(p => p[1] === 0).length === 3 ? "la pointe vers le bas" : "la pointe vers le haut";
+      return n.filter(p => p[0] === 0).length === 3 ? "la pointe vers la droite" : "la pointe vers la gauche"; }
+    return w === 3 ? (n.filter(p => p[1] === 0).length === 1 ? "couché, la bosse en haut" : "couché, la bosse en bas") : "debout";
+  }
+  function consigne(p) { const s = sensMot(p.t, p.r); return `Pose le ${PC[p.t].nom} ${NOMS_COUL[p.t]} ${zoneMot(p.cs.map(([x, y]) => [x, y + 10]))}${s ? ", " + s : ""}.`; }
+  const DESCRIPTIONS = {
+    I: "Quatre carrés bien alignés, comme un bâton.",
+    O: "Quatre carrés serrés en un gros carré.",
+    T: "Trois carrés en ligne et un dessous, juste au milieu.",
+    S: "Deux carrés en haut à droite et deux en bas à gauche, en escalier.",
+    Z: "Deux carrés en haut à gauche et deux en bas à droite, en escalier.",
+    J: "Trois carrés en ligne et un au-dessus, à gauche.",
+    L: "Trois carrés en ligne et un au-dessus, à droite.",
+  };
+
+  function nouvellePartie() {
+    const m = JEUX[jeu].id, n = niv;
+    Object.assign(G, { mode: m, niv: n, grille: Array.from({ length: H }, () => Array(W).fill(null)), poses: [], stock: {}, sel: null, rot: 0,
+      zone: null, cibles: null, modele: null, modeleVisible: true, fini: false, tour: 0, sac: [], courante: null, devine: false, score: 0,
+      essais: 0, lignes: 0, image: null, verrou: null, confirme: null, revoir: 2, historique: [], message: "", minuteur: null, pos: null, choixNom: 0 });
+    clearTimeout(G.chrono);
+    if (m === "puzzle") {
+      if (n === 0) { G.zone = rect(3, 16, 4, 4); G.stock = { I: 4, O: 4 }; OBJ.txt = "Remplis le carré en pointillés avec les O et les I."; }
+      if (n === 1) { G.zone = rect(0, 10, 10, 10); G.sac = tirerSac(25); G.courante = G.sac.shift(); G.stock = {}; G.echanges = 3;
+        OBJ.txt = "Remplis la moitié du bas avec les pièces tirées au hasard. Un ou deux trous, c'est déjà très bien !"; }
+      if (n === 2) { G.zone = null; G.stock = stockTous(true); OBJ.txt = "Range les 49 pièces sur tout le plateau en gardant un trou en forme de T pour le T trophée."; }
+    }
+    if (m === "copie") {
+      G.modele = genModele(n === 0 ? 3 : 5); G.zone = rect(0, 10, 10, 10);
+      G.modele.forEach(p => G.stock[p.t] = (G.stock[p.t] || 0) + 1);
+      if (n === 0) OBJ.txt = "Recopie le modèle du haut dans la moitié du bas, au même endroit et dans le même sens.";
+      if (n === 1) { OBJ.txt = "Regarde bien le modèle : il se cache dans 10 secondes !"; G.minuteur = 10;
+        const tic = () => { if (!G.ouvert || G.mode !== "copie") return; G.minuteur--; if (G.minuteur <= 0) { G.modeleVisible = false; dire("Le modèle est caché. À toi de le refaire de mémoire !"); majPanneau(); dessine(); return; } majPanneau(); G.chrono = setTimeout(tic, 1000); };
+        G.chrono = setTimeout(tic, 1000); }
+      if (n === 2) { G.modeleVisible = false; OBJ.txt = "Écoute ou lis les consignes, et pose les pièces dans la moitié du bas."; }
+    }
+    if (m === "pioche") {
+      G.sac = tirerSac(); G.courante = G.sac.shift(); G.devine = false; G.rotMystere = Math.floor(Math.random() * 4);
+      OBJ.txt = n === 0 ? "Quelle est cette pièce ? Choisis son nom, puis pose-la où tu veux." :
+                n === 1 ? "Devine la pièce d'après son ombre, puis pose-la contre une pièce déjà posée." :
+                          "Lis la description et devine la pièce, puis pose-la contre une pièce déjà posée.";
+    }
+    if (m === "lignes") {
+      if (n === 0) { G.stock = stockTous(false); G.but = 3; } else { G.sac = tirerSac(); G.courante = G.sac.shift(); G.but = n === 1 ? 5 : 10; }
+      OBJ.txt = `Chacun son tour, remplissez le plateau par le bas. Objectif : ${G.but} lignes complètes.` + (n === 2 ? " Avant de poser, annonce ta place : vise, puis valide." : "");
+    }
+    if (m === "images") {
+      if (n < 2) {
+        G.image = IMAGES[imageChoisie]; const ox = Math.floor((10 - G.image.w) / 2), oy = 20 - G.image.h;
+        G.cibles = G.image.pieces.map(([t, i, j, k]) => ({ t, r: k, cs: casesDe(t, ox + i, oy + j, k) }));
+        G.zone = new Set(); G.cibles.forEach(c => c.cs.forEach(([x, y]) => G.zone.add(cle(x, y))));
+        G.cibles.forEach(c => G.stock[c.t] = (G.stock[c.t] || 0) + 1);
+        OBJ.txt = n === 0 ? `Reconstruis « ${G.image.nom} » : chaque pièce à sa place, de la même couleur.` : `Remplis la silhouette « ${G.image.nom} » avec les pièces proposées.`;
+      } else { G.stock = stockTous(true); OBJ.txt = "Invente ton image avec toutes les pièces, puis appuie sur « J'ai fini »."; }
+    }
+    choisirPremier();
+    dire(m === "pioche" ? "Quelle est cette pièce ? Choisis son nom, puis appuie sur ✔." :
+      "Pose ton doigt sur le plateau et glisse pour déplacer la pièce. ⟳ pour tourner, ✔ pour poser.");
+  }
+  function choisirPremier() {
+    if (G.courante) { G.sel = G.courante; G.rot = 0; return; }
+    const t = Object.keys(PC).find(k => G.stock[k] > 0); G.sel = t || null; G.rot = 0;
+  }
+
+  // après chaque pose : avance du mode, victoire
+  function apresPose(p) {
+    const m = G.mode;
+    if (G.courante) {                         // pièce tirée au hasard : on passe à la suivante
+      G.courante = G.sac.length ? G.sac.shift() : null; G.devine = false; G.rotMystere = Math.floor(Math.random() * 4);
+      G.sel = G.courante; G.rot = 0;
+    } else if (!G.stock[G.sel]) choisirPremier();
+    if (m === "lignes") {
+      G.lignes = G.grille.filter(l => l.every(Boolean)).length; G.tour++;
+      if (G.lignes >= G.but) return gagne(`${G.lignes} lignes complètes : bravo l'équipe !`);
+      dire(`Au tour du joueur ${G.tour % 2 + 1}. Lignes complètes : ${G.lignes} / ${G.but}.`);
+      if (G.courante && !piecesPossibles(G.courante)) { dire("Plus de place pour cette pièce : la partie est finie."); fin(`Partie finie avec ${G.lignes} lignes complètes.`); }
+    }
+    if (m === "puzzle") {
+      const z = G.zone || rect(0, 0, W, H), plein = [...z].every(k => { const [x, y] = k.split(",").map(Number); return G.grille[y][x]; });
+      if (plein) return gagne(G.niv === 2 ? "Plateau complet, le T trophée est posé : champion !" : "La zone est pleine, sans un trou. Bravo !");
+      if (G.niv === 1 && !G.courante) { const trous = [...z].filter(k => { const [x, y] = k.split(",").map(Number); return !G.grille[y][x]; }).length; fin(`Plus de pièces : il reste ${trous} cases vides.`, trous <= 8); }
+      else if (G.niv === 1 && G.courante && !piecesPossibles(G.courante)) dire("Cette pièce ne rentre plus nulle part : utilise « Changer de pièce ».");
+    }
+    if (m === "copie" && G.poses.length === G.modele.length) verifieCopie();
+    if (m === "pioche") {
+      if (G.score >= (G.niv === 1 ? 3 : 5)) return gagne(G.niv === 1 ? "3 bonnes devinettes : bravo !" : "5 pièces bien nommées : bravo !");
+      dire("Nouvelle pièce mystère !");
+    }
+    if (m === "images" && G.niv < 2 && G.zone && [...G.zone].every(k => { const [x, y] = k.split(",").map(Number); return G.grille[y][x]; })) {
+      if (G.niv === 0) { const ok = G.cibles.every(c => c.cs.every(([x, y]) => G.grille[y][x] && G.grille[y][x].t === c.t));
+        ok ? gagne(`« ${G.image.nom} » est terminé, toutes les couleurs sont justes !`) : gagne(`« ${G.image.nom} » est rempli ! Quelques couleurs sont échangées, mais l'image est là.`); }
+      else gagne(`La silhouette « ${G.image.nom} » est remplie. Bravo !`);
+    }
+    majPanneau(); dessine();
+  }
+  function verifieCopie() {
+    let bons = 0;
+    if (G.niv < 2) {   // même place exacte, même pièce, même sens
+      G.modele.forEach(mp => { const att = new Set(mp.cs.map(([x, y]) => cle(x, y + 10)));
+        if (G.poses.some(p => p.t === mp.t && p.cs.every(([x, y]) => att.has(cle(x, y))))) bons++; });
+    } else {           // niveau 3 : bonne pièce, bon sens, bonne zone
+      G.modele.forEach(mp => { if (G.poses.some(p => p.t === mp.t && formeNorm(p.cs) === formeNorm(mp.cs) && zoneMot(p.cs) === zoneMot(mp.cs.map(([x, y]) => [x, y + 10])))) bons++; });
+    }
+    G.modeleVisible = true;
+    const n = G.modele.length;
+    if (bons === n) gagne(`Les ${n} pièces sont exactement comme le modèle. Bravo !`);
+    else if (G.niv === 1 && bons >= 4) gagne(`${bons} pièces sur ${n} au bon endroit : défi réussi !`);
+    else fin(`${bons} pièce${bons > 1 ? "s" : ""} sur ${n} comme le modèle. Compare avec le modèle du haut, et réessaie !`, false);
+  }
+  function gagne(txt) {
+    G.fini = true; dire("★ " + txt); fanfare(); hero.saut(true);
+    etoiles[JEUX[jeu].id + niv] = true; sauve(); rendJeux();
+    elJ("j-fin").hidden = false; elJ("j-fin-txt").textContent = txt; elJ("j-fin-titre").textContent = "BRAVO !";
+    majPanneau(); dessine();
+  }
+  function fin(txt, reussi) {
+    G.fini = true; dire(txt);
+    if (reussi) { etoiles[JEUX[jeu].id + niv] = true; sauve(); rendJeux(); fanfare(); }
+    elJ("j-fin").hidden = false; elJ("j-fin-txt").textContent = txt; elJ("j-fin-titre").textContent = reussi ? "BIEN JOUÉ !" : "PARTIE TERMINÉE";
+    majPanneau(); dessine();
+  }
+  function dire(t) { G.message = t; const m = elJ("j-msg"); if (m) m.textContent = t; }
+
+  // ---------------- rendu du plateau ----------------
+  const cvJ = () => elJ("j-plateau");
+  let CEL = 28;
+  function dimensionne() {
+    const zone = elJ("j-zone-plateau"); if (!zone) return;
+    const r = zone.getBoundingClientRect();
+    CEL = Math.max(14, Math.floor(Math.min((r.width - 8) / W, (r.height - 8) / H)));
+    const c = cvJ(), dpr = Math.min(2, window.devicePixelRatio || 1);
+    c.width = W * CEL * dpr; c.height = H * CEL * dpr; c.style.width = W * CEL + "px"; c.style.height = H * CEL + "px";
+    c.getContext("2d").setTransform(dpr, 0, 0, dpr, 0, 0); dessine();
+  }
+  function bloc(g, x, y, coul, alpha, brille) {
+    const s = CEL, px = x * s, py = y * s;
+    g.globalAlpha = alpha; g.fillStyle = coul; g.fillRect(px + 1, py + 1, s - 2, s - 2);
+    g.fillStyle = "rgba(255,255,255,.38)"; g.fillRect(px + 1, py + 1, s - 2, Math.max(2, s * .14)); g.fillRect(px + 1, py + 1, Math.max(2, s * .12), s - 2);
+    g.fillStyle = "rgba(0,0,0,.28)"; g.fillRect(px + 1, py + s - 1 - Math.max(2, s * .12), s - 2, Math.max(2, s * .12)); g.fillRect(px + s - 1 - Math.max(2, s * .1), py + 1, Math.max(2, s * .1), s - 2);
+    if (brille) { g.fillStyle = "rgba(255,255,255,.9)"; g.fillRect(px + s * .25, py + s * .25, s * .18, s * .18); }
+    g.globalAlpha = 1;
+  }
+  function contour(g, cs, coul, larg) {
+    const set = new Set(cs.map(([x, y]) => cle(x, y))), s = CEL; g.strokeStyle = coul; g.lineWidth = larg; g.beginPath();
+    cs.forEach(([x, y]) => {
+      if (!set.has(cle(x, y - 1))) { g.moveTo(x * s, y * s); g.lineTo((x + 1) * s, y * s); }
+      if (!set.has(cle(x, y + 1))) { g.moveTo(x * s, (y + 1) * s); g.lineTo((x + 1) * s, (y + 1) * s); }
+      if (!set.has(cle(x - 1, y))) { g.moveTo(x * s, y * s); g.lineTo(x * s, (y + 1) * s); }
+      if (!set.has(cle(x + 1, y))) { g.moveTo((x + 1) * s, y * s); g.lineTo((x + 1) * s, (y + 1) * s); }
+    });
+    g.stroke();
+  }
+  function dessine() {
+    const c = cvJ(); if (!c || !G.ouvert) return; const g = c.getContext("2d"), s = CEL;
+    g.fillStyle = "#0B0918"; g.fillRect(0, 0, W * s, H * s);
+    // zone de jeu, séparation modèle / copie
+    if (G.zone) { g.fillStyle = "rgba(255,210,63,.10)"; G.zone.forEach(k => { const [x, y] = k.split(",").map(Number); g.fillRect(x * s, y * s, s, s); }); }
+    g.strokeStyle = "#2B2350"; g.lineWidth = 1;
+    for (let x = 0; x <= W; x++) { g.beginPath(); g.moveTo(x * s + .5, 0); g.lineTo(x * s + .5, H * s); g.stroke(); }
+    for (let y = 0; y <= H; y++) { g.beginPath(); g.moveTo(0, y * s + .5); g.lineTo(W * s, y * s + .5); g.stroke(); }
+    if (G.zone && G.mode !== "images") { g.setLineDash([5, 4]); contour(g, [...G.zone].map(k => k.split(",").map(Number)), "#FFD23F", 2); g.setLineDash([]); }
+    if (G.mode === "copie") {
+      g.fillStyle = "rgba(255,255,255,.04)"; g.fillRect(0, 0, W * s, 10 * s);
+      g.fillStyle = "#FFD23F"; g.fillRect(0, 10 * s - 1, W * s, 2);
+      g.font = `${Math.max(9, s * .38)}px "Press Start 2P", monospace`; g.fillStyle = "#B3ABD6"; g.textBaseline = "top";
+      g.fillText(G.modeleVisible ? "MODÈLE" : (G.niv === 2 ? "CONSIGNES ➜" : "MODÈLE CACHÉ"), 6, 6); g.fillText("TA COPIE", 6, 10 * s + 6);
+      if (G.modeleVisible) G.modele.forEach(p => { p.cs.forEach(([x, y]) => bloc(g, x, y, PC[p.t].coul, .85)); contour(g, p.cs, "#0B0918", 2); });
+    }
+    if (G.cibles) {   // cartes images : pièces à reproduire (niveau 1) ou silhouette (niveau 2)
+      G.cibles.forEach(cb => {
+        if (G.niv === 0) { cb.cs.forEach(([x, y]) => { g.globalAlpha = .28; g.fillStyle = PC[cb.t].coul; g.fillRect(x * s + 1, y * s + 1, s - 2, s - 2); g.globalAlpha = 1; }); contour(g, cb.cs, PC[cb.t].coul, 2); }
+        else cb.cs.forEach(([x, y]) => { g.fillStyle = "#3A3266"; g.fillRect(x * s + 1, y * s + 1, s - 2, s - 2); });
+      });
+    }
+    // pièces posées
+    G.poses.forEach(p => { p.cs.forEach(([x, y]) => bloc(g, x, y, PC[p.t].coul, 1, PC[p.t].brille)); contour(g, p.cs, "#0B0918", 2); });
+    // lignes complètes (mode lignes)
+    if (G.mode === "lignes") G.grille.forEach((l, y) => { if (l.every(Boolean)) { g.strokeStyle = "#FFD23F"; g.lineWidth = 3; g.strokeRect(1.5, y * s + 1.5, W * s - 3, s - 3); } });
+    // pièce en main, en transparence : on voit à travers les pièces déjà posées
+    if (G.sel && !G.pos && !G.fini && pretAPoser()) prendEnMain();
+    if (G.sel && G.pos && !G.fini && pretAPoser()) {
+      const cs = casesMain(), pb = raisonInvalide(G.sel, cs);
+      cs.forEach(([x, y]) => { const gene = G.grille[y][x] || (G.zone && !G.zone.has(cle(x, y)));
+        bloc(g, x, y, gene ? "#FF3B3B" : PC[G.sel].coul, gene ? .7 : .5, PC[G.sel].brille); });
+      if (pb) g.setLineDash([5, 3]); contour(g, cs, pb ? "#FF7070" : "#FFFFFF", 3); g.setLineDash([]);
+    }
+  }
+  function pretAPoser() { return !(G.mode === "pioche" && !G.devine); }
+
+  // ---------------- panneau (pièces, actions) ----------------
+  const miniSVG = (t, s, r) => { const c = tourneP(PC[t].c, r || 0), mx = Math.min(...c.map(p => p[0])), my = Math.min(...c.map(p => p[1]));
+    const n = c.map(([x, y]) => [x - mx, y - my]), w = Math.max(...n.map(p => p[0])) + 1, h = Math.max(...n.map(p => p[1])) + 1;
+    return `<svg width="${w * s}" height="${h * s}" viewBox="0 0 ${w * s} ${h * s}" aria-hidden="true">${n.map(([x, y]) => `<rect x="${x * s}" y="${y * s}" width="${s - 1}" height="${s - 1}" fill="${PC[t].coul}"/><rect x="${x * s}" y="${y * s}" width="${s - 1}" height="2" fill="rgba(255,255,255,.45)"/>`).join("")}</svg>`; };
+  const silhouetteSVG = (t, s, r) => miniSVG(t, s, r).replace(new RegExp(PC[t].coul, "g"), "#0B0918").replace(/rgba\(255,255,255,\.45\)/g, "#0B0918");
+  function majPanneau() {
+    if (!G.ouvert) return;
+    const m = G.mode, p = elJ("j-pieces"), info = elJ("j-info");
+    elJ("j-titre").textContent = `${JEUX[jeu].nom} · ${"★".repeat(niv + 1)}${"☆".repeat(2 - niv)}`;
+    elJ("j-obj").textContent = OBJ.txt;
+    // pièces disponibles
+    let html = "";
+    if (m === "pioche") {
+      const t = G.courante;
+      if (!t) html = `<p class="j-aide">Le sac est vide !</p>`;
+      else if (!G.devine) {
+        const indice = G.niv === 0 ? `<div class="j-mystere">${miniSVG(t, 22, 0)}</div>` : G.niv === 1 ? `<div class="j-mystere ombre">${silhouetteSVG(t, 22, G.rotMystere)}</div>` : `<p class="j-desc">« ${DESCRIPTIONS[t]} »</p>`;
+        html = `<div class="j-pioche">${indice}<p class="j-aide">${G.niv === 0 ? "Comment s'appelle cette pièce ?" : "Quelle pièce est-ce ?"}</p>
+          <div class="j-noms">${TYPES7.map(k => `<button class="j-nom" data-nom="${k}" aria-current="${TYPES7[G.choixNom || 0] === k}">${k}</button>`).join("")}</div>
+          <p class="j-score">Bonnes réponses : ${G.score} · essais : ${G.essais}</p></div>`;
+      } else html = `<div class="j-pioche"><div class="j-mystere">${miniSVG(t, 22, 0)}</div><p class="j-aide">C'est bien le <b>${PC[t].nom}</b> ! Pose-le sur le plateau.</p><p class="j-score">Bonnes réponses : ${G.score} · essais : ${G.essais}</p></div>`;
+    } else if (G.courante) {
+      const t = G.courante;
+      html = `<div class="j-pioche"><p class="j-aide">Pièce tirée au hasard :</p><div class="j-mystere">${miniSVG(t, 22, G.rot)}</div>
+        <p class="j-score">${G.sac.length} pièce${G.sac.length > 1 ? "s" : ""} encore dans le sac${G.mode === "lignes" ? ` · joueur ${G.tour % 2 + 1}` : ""}</p>
+        ${G.mode === "puzzle" ? `<button id="j-echange" ${G.echanges ? "" : "disabled"}>Changer de pièce (${G.echanges})</button>` : ""}</div>`;
+    } else {
+      html = Object.keys(PC).filter(k => G.stock[k] !== undefined).map(k =>
+        `<button class="j-piece" data-t="${k}" aria-pressed="${G.sel === k}" ${G.stock[k] ? "" : "disabled"} aria-label="Pièce ${PC[k].nom}, ${G.stock[k]} restante${G.stock[k] > 1 ? "s" : ""}">${miniSVG(k, 12, G.sel === k ? G.rot : 0)}<span>${G.stock[k]}</span></button>`).join("");
+      if (m === "lignes") html += `<p class="j-score" style="flex-basis:100%">Joueur ${G.tour % 2 + 1} · lignes : ${G.lignes} / ${G.but}</p>`;
+    }
+    p.innerHTML = html;
+    p.querySelectorAll(".j-piece").forEach(b => b.addEventListener("pointerdown", e => { choisir(b.dataset.t); demarreGlisse(e); }));
+    p.querySelectorAll(".j-nom").forEach(b => b.addEventListener("click", () => devine(b.dataset.nom)));
+    const ech = elJ("j-echange"); if (ech) ech.addEventListener("click", () => { if (!G.echanges) return; G.echanges--; G.sac.push(G.courante); G.courante = G.sac.shift(); G.sel = G.courante; G.rot = 0; bip(520); majPanneau(); dessine(); });
+    // informations propres au mode
+    let inf = "";
+    if (m === "copie" && G.niv === 1 && G.minuteur > 0) inf = `<p class="j-chrono">Le modèle se cache dans <b>${G.minuteur}</b> s</p>`;
+    if (m === "copie" && G.niv === 1 && !G.modeleVisible && !G.fini) inf = `<button id="j-revoir" ${G.revoir ? "" : "disabled"}>Revoir le modèle 3 s (${G.revoir})</button>`;
+    if (m === "copie" && G.niv === 2) inf = `<ol class="j-consignes">${G.modele.map(pm => `<li><span>${consigne(pm)}</span> <button class="j-voir" data-svg="${pm.t},${pm.r}" aria-label="Voir le dessin">dessin</button></li>`).join("")}</ol>
+      <button id="j-ecoute">Écouter les consignes</button>`;
+    if (m === "images" && G.niv === 2 && !G.fini) inf = `<button id="j-fini" class="jaune">J'ai fini !</button>`;
+    if (m === "puzzle" && G.niv === 1 && !G.fini) inf = `<button id="j-stop">Je m'arrête là</button>`;
+    if (m === "lignes" && G.niv === 2 && !G.fini) inf = `<p class="j-aide">Avant d'appuyer sur POSER, dis à ton coéquipier pourquoi tu mets la pièce là.</p>`;
+    info.innerHTML = inf;
+    const rv = elJ("j-revoir"); if (rv) rv.addEventListener("click", () => { if (!G.revoir) return; G.revoir--; G.modeleVisible = true; dessine(); majPanneau(); setTimeout(() => { if (!G.fini) G.modeleVisible = false; dessine(); majPanneau(); }, 3000); });
+    const ec = elJ("j-ecoute"); if (ec) ec.addEventListener("click", () => parle(G.modele.map(consigne).join(" ")));
+    info.querySelectorAll(".j-voir").forEach(b => b.addEventListener("click", () => { const [t, r] = b.dataset.svg.split(","); b.outerHTML = miniSVG(t, 9, +r); }));
+    const fi = elJ("j-fini"); if (fi) fi.addEventListener("click", () => G.poses.length ? gagne(`Ton image a ${G.poses.length} pièces. Raconte-la ou fais-la deviner !`) : dire("Pose d'abord quelques pièces !"));
+    const st = elJ("j-stop"); if (st) st.addEventListener("click", () => { const trous = [...G.zone].filter(k => { const [x, y] = k.split(",").map(Number); return !G.grille[y][x]; }).length; fin(`Tu t'arrêtes avec ${trous} cases vides.`, trous <= 8); });
+    elJ("j-tourner").disabled = !G.sel || G.fini || (m === "pioche" && !G.devine);
+    elJ("j-poser").textContent = ""; elJ("j-poser").innerHTML = (m === "pioche" && !G.devine) ? "✔<span>CHOISIR</span>" : "✔<span>POSER</span>";
+    elJ("j-poser").disabled = G.fini || (m !== "pioche" && !G.sel) || (m === "pioche" && !G.courante);
+    elJ("j-annuler").disabled = !G.historique.length || G.fini;
+  }
+  function choisir(t) { if (G.courante || G.fini) return; if (!G.stock[t]) return; if (G.sel !== t) { G.sel = t; G.rot = 0; borne(); } bip(820); majPanneau(); dessine(); }
+  function devine(nom) {
+    if (G.devine || !G.courante) return; G.essais++;
+    if (nom === G.courante) { G.score++; G.devine = true; G.sel = G.courante; G.rot = 0; bip(880); dire("Bravo, c'est bien ça ! Pose la pièce sur le plateau."); }
+    else { bip(200); dire(G.niv === 0 ? "Non, regarde bien la forme et réessaie !" : "Ce n'est pas ça. Essaie encore !"); }
+    if (G.mode === "pioche" && G.niv === 1 && G.essais >= 5 && G.score < 3 && !G.devine) fin(`${G.score} bonne devinette sur 5. On réessaie ?`, false);
+    majPanneau(); dessine();
+  }
+  function annuler() {
+    if (!G.historique.length || G.fini) return;
+    const id = G.historique.pop(), p = G.poses.find(q => q.id === id); if (!p) return;
+    if (G.courante !== null && G.sac) { if (G.courante) G.sac.unshift(G.courante); G.courante = p.t; G.sel = p.t; G.rot = p.r; G.grille.forEach(l => l.forEach((c, i) => { if (c === p) l[i] = null; })); G.poses = G.poses.filter(q => q !== p); G.devine = true; }
+    else { retirer(p); G.sel = p.t; G.rot = p.r; }
+    G.pos = [Math.min(...p.cs.map(c => c[0])), Math.min(...p.cs.map(c => c[1]))];
+    if (G.mode === "lignes") { G.tour = Math.max(0, G.tour - 1); G.lignes = G.grille.filter(l => l.every(Boolean)).length; }
+    majPanneau(); dessine();
+  }
+  function parle(txt) { try { const u = new SpeechSynthesisUtterance(txt); u.lang = "fr-FR"; u.rate = .9; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) { dire("La lecture à voix haute n'est pas disponible sur cet appareil : lis les consignes à l'enfant."); } }
+
+  // ---------------- la pièce en main : elle apparaît sur le plateau, on la déplace, on la tourne, on la pose ----------------
+  const formeN = (t, r) => { const c = tourneP(PC[t].c, r), mx = Math.min(...c.map(p => p[0])), my = Math.min(...c.map(p => p[1])); return c.map(([x, y]) => [x - mx, y - my]); };
+  const taille = f => [Math.max(...f.map(p => p[0])) + 1, Math.max(...f.map(p => p[1])) + 1];
+  const casesMain = () => (G.sel && G.pos) ? formeN(G.sel, G.rot).map(([a, b]) => [G.pos[0] + a, G.pos[1] + b]) : [];
+  const finOuverte = () => !elJ("j-fin").hidden;
+  function pieceActive() { return G.ouvert && G.sel && !G.fini && pretAPoser() && !finOuverte(); }
+  function chuteA(x) {   // jeu des lignes : la pièce descend tout droit depuis le haut et s'arrête sur le fond ou sur une pièce
+    const f = formeN(G.sel, G.rot), [, h] = taille(f), vide = yy => f.every(([a, b]) => !G.grille[yy + b][x + a]);
+    if (!vide(0)) return 0; let y = 0; while (y + h < H && vide(y + 1)) y++; return y;
+  }
+  function borne() {     // la pièce reste toujours entière sur le plateau
+    if (!G.sel || !G.pos) return; const [w, h] = taille(formeN(G.sel, G.rot));
+    G.pos = [Math.max(0, Math.min(W - w, G.pos[0])), Math.max(0, Math.min(H - h, G.pos[1]))];
+    if (G.mode === "lignes") G.pos[1] = chuteA(G.pos[0]);
+  }
+  function posDefaut() {
+    if (G.mode === "lignes") return [4, 0];
+    if (G.zone && G.zone.size) { const ks = [...G.zone].map(k => k.split(",").map(Number));
+      return [Math.floor((Math.min(...ks.map(p => p[0])) + Math.max(...ks.map(p => p[0]))) / 2), Math.min(...ks.map(p => p[1])) + 1]; }
+    return [4, 4];
+  }
+  function prendEnMain() {   // la pièce apparaît à la place libre la plus proche du point de départ
+    if (!G.sel) { G.pos = null; return; }
+    const f = formeN(G.sel, G.rot), [w, h] = taille(f), [cx, cy] = posDefaut();
+    let mieux = null, dm = 1e9;
+    for (let y = 0; y <= H - h; y++) for (let x = 0; x <= W - w; x++) {
+      if (G.mode === "lignes" && y > 0) break;
+      const yy = G.mode === "lignes" ? chuteA(x) : y, cs = f.map(([a, b]) => [x + a, yy + b]);
+      if (raisonInvalide(G.sel, cs)) continue;
+      const d = Math.abs(x + (w - 1) / 2 - cx) + 1.01 * Math.abs(yy + (h - 1) / 2 - cy); if (d < dm) { dm = d; mieux = [x, yy]; }
+    }
+    G.pos = mieux || [cx - Math.floor((w - 1) / 2), cy]; borne();
+  }
+  function centreSur(cx, cy) { const [w, h] = taille(formeN(G.sel, G.rot)); G.pos = [cx - Math.floor((w - 1) / 2), cy - Math.floor((h - 1) / 2)]; borne(); }
+  function deplace(dx, dy) {
+    if (!G.ouvert || G.fini || finOuverte()) return;
+    if (G.mode === "pioche" && !G.devine && G.courante) { if (dx || dy) { G.choixNom = ((G.choixNom || 0) + (dx || dy) + 7) % 7; bip(700); majPanneau(); } return; }
+    if (!pieceActive()) return; if (!G.pos) prendEnMain();
+    const avant = G.pos.join(); G.pos = [G.pos[0] + dx, G.pos[1] + dy]; borne();
+    bip(G.pos.join() === avant ? 160 : 520); dessine();
+  }
+  function tourner() {
+    if (!pieceActive()) return; if (!G.pos) prendEnMain();
+    const [w, h] = taille(formeN(G.sel, G.rot)), cx = G.pos[0] + (w - 1) / 2, cy = G.pos[1] + (h - 1) / 2;
+    G.rot = (G.rot + 1) % 4; const [w2, h2] = taille(formeN(G.sel, G.rot));
+    G.pos = [Math.round(cx - (w2 - 1) / 2), Math.round(cy - (h2 - 1) / 2)]; borne(); bip(990); majPanneau(); dessine();
+  }
+  function valider() {
+    if (!G.ouvert || G.fini || finOuverte()) return;
+    if (G.mode === "pioche" && !G.devine) { if (G.courante) devine(TYPES7[G.choixNom || 0]); return; }
+    if (!G.sel) { dire("Choisis d'abord une pièce."); return; }
+    if (!G.pos) prendEnMain();
+    const cs = casesMain(), pb = raisonInvalide(G.sel, cs);
+    if (pb) { dire(pb + " Déplace-la avec les flèches."); bip(180); dessine(); return; }
+    G.pos = null; poserCases(G.sel, G.rot, cs); majPanneau(); dessine();
+  }
+  function pieceSuivante(d) {
+    if (G.courante || G.fini || finOuverte()) return; const dispo = Object.keys(PC).filter(k => G.stock[k] > 0); if (!dispo.length) return;
+    const i = dispo.indexOf(G.sel); choisir(dispo[(i + d + dispo.length) % dispo.length]);
+  }
+
+  // ---------------- joystick virtuel : il apparaît là où le doigt se pose, n'importe où sur la zone du plateau ----------------
+  // La pièce ne saute jamais sous le doigt : elle part de sa place et avance case par case dans la direction du joystick.
+  function demarreGlisse() {}
+  const STICK = { R: 56, SEUIL: 16, id: null, ox: 0, oy: 0, dx: 0, dy: 0, dir: null, prochain: 0 };
+  function brancheCanvas() {
+    const zone = elJ("j-zone-plateau"), base = elJ("j-stick"), bouton = elJ("j-stick-bouton");
+    const place = (x, y) => { const r = zone.getBoundingClientRect(); base.style.left = (x - r.left) + "px"; base.style.top = (y - r.top) + "px"; };
+    zone.addEventListener("pointerdown", e => {
+      if (e.button === 2 || STICK.id !== null || !G.ouvert) return;
+      e.preventDefault(); STICK.id = e.pointerId; STICK.ox = e.clientX; STICK.oy = e.clientY; STICK.dx = STICK.dy = 0; STICK.dir = null;
+      try { zone.setPointerCapture(e.pointerId); } catch (er) {}
+      place(e.clientX, e.clientY); bouton.style.transform = "translate(-50%, -50%)"; base.hidden = false;
+      requestAnimationFrame(boucleStick);
+    });
+    zone.addEventListener("pointermove", e => {
+      if (e.pointerId !== STICK.id) return;
+      let dx = e.clientX - STICK.ox, dy = e.clientY - STICK.oy; const d = Math.hypot(dx, dy);
+      if (d > STICK.R) { dx *= STICK.R / d; dy *= STICK.R / d; }
+      STICK.dx = dx; STICK.dy = dy; bouton.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+    });
+    const lache = e => { if (e.pointerId !== STICK.id) return; STICK.id = null; STICK.dir = null; base.hidden = true; };
+    zone.addEventListener("pointerup", lache); zone.addEventListener("pointercancel", lache); zone.addEventListener("lostpointercapture", lache);
+    zone.addEventListener("contextmenu", e => { e.preventDefault(); tourner(); });
+  }
+  function boucleStick(ts) {
+    if (STICK.id === null) return;
+    const d = Math.hypot(STICK.dx, STICK.dy);
+    const dir = d < STICK.SEUIL ? null : Math.abs(STICK.dx) > Math.abs(STICK.dy) ? [Math.sign(STICK.dx), 0] : [0, Math.sign(STICK.dy)];
+    const cle2 = dir && dir.join();
+    if (dir && cle2 !== STICK.dir) { deplace(dir[0], dir[1]); STICK.prochain = ts + 320; }          // un pas dès qu'on pousse
+    else if (dir && ts >= STICK.prochain) { deplace(dir[0], dir[1]); STICK.prochain = ts + (d > STICK.R * .85 ? 110 : 230); }  // puis ça avance tant qu'on tient, plus vite à fond
+    STICK.dir = cle2;
+    requestAnimationFrame(boucleStick);
+  }
+  // flèches et boutons à l'écran (on peut garder le doigt appuyé sur une flèche)
+  function brancheCommandes() {
+    [["j-gauche", -1, 0], ["j-droite", 1, 0], ["j-haut", 0, -1], ["j-bas", 0, 1]].forEach(([id, dx, dy]) => {
+      const b = elJ(id); let t1 = null, t2 = null;
+      const stop = () => { clearTimeout(t1); clearInterval(t2); };
+      b.addEventListener("pointerdown", e => { e.preventDefault(); deplace(dx, dy); stop(); t1 = setTimeout(() => { t2 = setInterval(() => deplace(dx, dy), 120); }, 380); });
+      ["pointerup", "pointerleave", "pointercancel"].forEach(ev => b.addEventListener(ev, stop));
+      b.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); deplace(dx, dy); } });
+    });
+    elJ("j-poser").addEventListener("click", valider);
+  }
+
+  // ---------------- clavier et borne d'arcade ----------------
+  // Encodeurs d'arcade en mode clavier : réglages par défaut de MAME, joueur 1 et joueur 2.
+  const TOUCHES = {
+    gauche: ["ArrowLeft", "KeyD"], droite: ["ArrowRight", "KeyG"], haut: ["ArrowUp", "KeyR"], bas: ["ArrowDown", "KeyF"],
+    poser: ["ControlLeft", "KeyA", "Enter", "NumpadEnter"],        // bouton 1
+    tourner: ["AltLeft", "KeyS", "KeyT"],                            // bouton 2
+    suivante: ["Space", "KeyQ", "KeyX"],                             // bouton 3
+    annuler: ["ShiftLeft", "KeyW", "Backspace"],                     // bouton 4
+    precedente: ["KeyZ"],                                            // bouton 5
+    start: ["Digit1", "Digit2"],                                     // START
+    menu: ["Digit5", "Digit6", "Escape"],                            // COIN / SELECT
+  };
+  const action = code => Object.keys(TOUCHES).find(a => TOUCHES[a].includes(code));
+  function agit(a) {
+    if (finOuverte()) {
+      if (a === "poser" || a === "start") return relance(false);
+      if (a === "tourner") return relance(true);
+      if (a === "menu" || a === "annuler") return fermeJeu();
+      return;
+    }
+    ({ gauche: () => deplace(-1, 0), droite: () => deplace(1, 0), haut: () => deplace(0, -1), bas: () => deplace(0, 1),
+       poser: valider, tourner, suivante: () => pieceSuivante(1), precedente: () => pieceSuivante(-1), annuler, menu: fermeJeu,
+       start: () => {} })[a]();
+  }
+  window.addEventListener("keydown", e => {
+    if (!G.ouvert) return;
+    const a = action(e.code); if (!a) return;
+    if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+    if ((a === "poser" || a === "suivante") && e.target && e.target.tagName === "BUTTON" && !e.target.closest(".j-commandes") && (e.code === "Enter" || e.code === "Space")) return;  // Entrée sur un bouton = ce bouton
+    e.preventDefault(); agit(a);
+  });
+  // manettes et encodeurs USB (Gamepad API) : A=bouton 1, B=bouton 2, X=bouton 3, Y=bouton 4, LB/RB, Select=COIN, Start
+  const avant = {}, repete = {};
+  const BOUTONS = { 0: "poser", 1: "tourner", 2: "suivante", 3: "annuler", 4: "precedente", 5: "suivante", 8: "menu", 9: "start" };
+  function lisManette(ts) {
+    const pads = navigator.getGamepads ? [...navigator.getGamepads()].filter(Boolean) : [];
+    if (G.ouvert) pads.forEach(p => {
+      const id = p.index, b = i => p.buttons[i] && p.buttons[i].pressed, av = avant[id] = avant[id] || {};
+      const ax = p.axes[0] || 0, ay = p.axes[1] || 0;
+      const dx = (b(15) || ax > .5) ? 1 : (b(14) || ax < -.5) ? -1 : 0, dy = (b(13) || ay > .5) ? 1 : (b(12) || ay < -.5) ? -1 : 0;
+      if (dx || dy) { if (!av.dir || ts > (repete[id] || 0)) { agit(dx > 0 ? "droite" : dx < 0 ? "gauche" : dy > 0 ? "bas" : "haut"); repete[id] = ts + (av.dir ? 120 : 380); av.dir = true; } }
+      else av.dir = false;
+      Object.keys(BOUTONS).forEach(i => { const now = b(+i); if (now && !av[i]) agit(BOUTONS[i]); av[i] = now; });
+    });
+    requestAnimationFrame(lisManette);
+  }
+  requestAnimationFrame(lisManette);
+  window.addEventListener("gamepadconnected", () => { if (G.ouvert) dire("Manette détectée : joystick pour déplacer, bouton 1 pour poser, bouton 2 pour tourner."); });
+
+  // ---------------- ouverture / fermeture ----------------
+  function ouvreJeu() {
+    G.defile = window.scrollY; window.scrollTo(0, 0);
+    G.ouvert = true; elJ("jeu").hidden = false; document.body.style.overflow = "hidden";
+    elJ("j-fin").hidden = true; nouvellePartie(); majPanneau();
+    requestAnimationFrame(dimensionne); bip(880);
+    try { elJ("j-poser").focus({ preventScroll: true }); } catch (e) {}
+  }
+  function fermeJeu() { G.ouvert = false; clearTimeout(G.chrono); elJ("jeu").hidden = true; document.body.style.overflow = ""; window.scrollTo(0, G.defile || 0); try { speechSynthesis.cancel(); } catch (e) {} majPanneauVide(); }
+  function majPanneauVide() { rendMission(false); }
+  elJ("j-quitter").addEventListener("click", fermeJeu);
+  elJ("j-tourner").addEventListener("click", tourner);
+  elJ("j-annuler").addEventListener("click", annuler);
+  function relance(suite) { elJ("j-fin").hidden = true; if (suite) { if (niv < 2) niv++; else { niv = 0; jeu = (jeu + 1) % 5; } maj(false); } nouvellePartie(); majPanneau(); dessine(); }
+  elJ("j-recommencer").addEventListener("click", () => relance(false));
+  elJ("j-rejouer").addEventListener("click", () => relance(false));
+  elJ("j-suite").addEventListener("click", () => relance(true));
+  elJ("j-menu").addEventListener("click", fermeJeu);
+  window.addEventListener("resize", () => { if (G.ouvert) dimensionne(); });
+  if (window.ResizeObserver) new ResizeObserver(() => { if (G.ouvert) dimensionne(); }).observe(elJ("j-zone-plateau"));
+  brancheCanvas(); brancheCommandes();
+  window.__jeu = { G, STICK, poser, valider, deplace, tourner, centreSur, ouvreJeu, nouvellePartie, devine, ancre, casesDe };
+
+  return ouvreJeu;
+  })();
+  maj(false);
+})();
+</script>
+</body>
+</html>
