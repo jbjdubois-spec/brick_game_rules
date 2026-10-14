@@ -1376,12 +1376,21 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
     const avant = G.pos.join(); G.pos = [G.pos[0] + dx, G.pos[1] + dy]; borne();
     bip(G.pos.join() === avant ? 160 : 520); dessine();
   }
+  // case centrale de chaque pièce (dans sa forme de départ) : c'est autour d'elle que la pièce tourne
+  const PIVOT = { I: [1, 0], O: [0, 0], T: [1, 0], D: [1, 0], S: [1, 1], Z: [1, 1], J: [1, 1], L: [1, 1] };
+  function caseCentrale(t, r) {   // position de la case centrale dans la forme tournée et recalée en haut à gauche
+    let p = PIVOT[t].slice(); for (let i = 0; i < r; i++) p = [-p[1], p[0]];
+    const c = tourneP(PC[t].c, r), mx = Math.min(...c.map(q => q[0])), my = Math.min(...c.map(q => q[1]));
+    return [p[0] - mx, p[1] - my];
+  }
   function tourner() {
     if (G.mode === "pioche") return tournerChoix();
     if (!pieceActive()) return; if (!G.pos) prendEnMain();
-    const [w, h] = taille(formeN(G.sel, G.rot)), cx = G.pos[0] + (w - 1) / 2, cy = G.pos[1] + (h - 1) / 2;
-    G.rot = (G.rot + 1) % 4; const [w2, h2] = taille(formeN(G.sel, G.rot));
-    G.pos = [Math.round(cx - (w2 - 1) / 2), Math.round(cy - (h2 - 1) / 2)]; borne(); bip(990); majPanneau(); dessine();
+    if (G.sel === "O") { bip(990); return; }               // le carré tourné reste identique, il ne bouge pas
+    const avant = caseCentrale(G.sel, G.rot);              // la case centrale reste sur la même case du plateau
+    const centre = [G.pos[0] + avant[0], G.pos[1] + avant[1]];
+    G.rot = (G.rot + 1) % 4; const apres = caseCentrale(G.sel, G.rot);
+    G.pos = [centre[0] - apres[0], centre[1] - apres[1]]; borne(); bip(990); majPanneau(); dessine();
   }
   function valider() {
     if (!G.ouvert || G.fini || finOuverte()) return;
