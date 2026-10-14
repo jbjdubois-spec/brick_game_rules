@@ -480,6 +480,20 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
 .j-ronds { flex: 1; justify-content: flex-end; }
 #j-annuler { margin-right: auto; }
 @media (max-width: 760px) { .j-commandes { justify-content: stretch; } .j-ronds { width: 100%; } }
+
+/* boutons d'action du grand puzzle (niveau 2) : touches carrées arrondies, en relief, sous la pièce tirée */
+button.j-action { display: grid; justify-items: center; align-content: center; gap: 3px; margin: 6px 3px 2px; padding: 8px 4px 6px; min-height: 64px; min-width: 64px;
+  border-radius: 14px; font-family: var(--pixel); color: #1A1433; touch-action: manipulation; flex-shrink: 0; }
+button.j-action .ic { font-family: var(--body); font-size: 24px; line-height: 1; }
+button.j-action .tx { font-size: 8px; line-height: 1.2; }
+button.j-action .vies { font-family: var(--body); font-size: 16px; line-height: 1; color: #B0124F; letter-spacing: 1px; }
+button.j-action.change { background: var(--cyan); box-shadow: 0 5px 0 #1C7FA0, inset 0 -4px 0 rgba(0,0,0,.15); }
+button.j-action.stop { background: #F39325; box-shadow: 0 5px 0 #9A5308, inset 0 -4px 0 rgba(0,0,0,.15); }
+button.j-action:hover { filter: brightness(1.08); background-color: inherit; }
+button.j-action.change:hover { background: #6FD8F5; } button.j-action.stop:hover { background: #F7AA4E; }
+button.j-action:active { transform: translateY(3px); box-shadow: 0 2px 0 #333; }
+button.j-action:disabled { filter: grayscale(.9); opacity: .5; }
+@media (max-width: 760px) { #j-pieces button.j-action { width: calc(100% - 6px); } }
 </style>
 <style>body{margin:0}[hidden]{display:none!important}</style>
 </head>
@@ -726,6 +740,7 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
   }
   function choisirGroupe(g) {
     groupe = g; $("choix-groupe").hidden = !!g; $("ecran-jeux").hidden = !g;
+    document.querySelector(".ecran").hidden = !!g;   // l'animation n'apparaît que sur l'écran Solo / Multijoueur
     if (g) { if (!listeJeux().includes(jeu)) { jeu = listeJeux()[0]; niv = 0; } $("nom-groupe").textContent = g === "solo" ? "SOLO · 1 joueur" : "MULTIJOUEUR · 2 joueurs"; bip(880); }
     maj(false); window.scrollTo(0, 0);
   }
@@ -1336,8 +1351,10 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
     } else if (G.courante) {
       const t = G.courante;
       html = `<div class="j-piece j-tiree" aria-label="Pièce tirée au hasard : ${PC[t].nom}">${miniSVG(t, 12, G.rot)}<span>tirée</span></div>`;
+      if (G.mode === "puzzle" && !G.fini) html += `<button id="j-echange" class="j-action change" ${G.echanges ? "" : "disabled"} aria-label="Changer de pièce, ${G.echanges} changement${G.echanges > 1 ? "s" : ""} restant${G.echanges > 1 ? "s" : ""}"><span class="ic">⇄</span><span class="tx">CHANGER</span><span class="vies" aria-hidden="true">${"♥".repeat(G.echanges)}${"♡".repeat(3 - G.echanges)}</span></button>
+        <button id="j-stop" class="j-action stop"><span class="ic">■</span><span class="tx">J'ARRÊTE</span></button>`;
       avantInfo = `<p class="j-score">Pièce tirée au hasard · ${G.sac.length} pièce${G.sac.length > 1 ? "s" : ""} encore dans le sac</p>
-        ${G.mode === "puzzle" ? `<button id="j-echange" ${G.echanges ? "" : "disabled"}>Changer de pièce (${G.echanges})</button>` : ""}`;
+`;
     } else {
       html = Object.keys(PC).filter(k => G.stock[k] !== undefined).map(k =>
         `<button class="j-piece" data-t="${k}" aria-pressed="${G.sel === k}" ${G.stock[k] ? "" : "disabled"} aria-label="Pièce ${PC[k].nom}, ${G.stock[k]} restante${G.stock[k] > 1 ? "s" : ""}">${miniSVG(k, 12, G.sel === k ? G.rot : 0)}<span>${G.stock[k]}</span></button>`).join("");
@@ -1353,7 +1370,6 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
     if (m === "copie" && G.niv === 2) inf = `<ol class="j-consignes">${G.modele.map(pm => `<li><span>${consigne(pm)}</span> <button class="j-voir" data-svg="${pm.t},${pm.r}" aria-label="Voir le dessin">dessin</button></li>`).join("")}</ol>
       <button id="j-ecoute">Écouter les consignes</button>`;
     if (m === "images" && G.niv === 2 && !G.fini) inf = `<button id="j-fini" class="jaune">J'ai fini !</button>`;
-    if (m === "puzzle" && G.niv === 1 && !G.fini) inf = `<button id="j-stop">Je m'arrête là</button>`;
     if (m === "lignes" && G.niv === 2 && !G.fini) inf = `<p class="j-aide">Avant d'appuyer sur POSER, dis à ton coéquipier pourquoi tu mets la pièce là.</p>`;
     info.innerHTML = avantInfo + inf; requestAnimationFrame(majDefile);
     const ech = elJ("j-echange"); if (ech) ech.addEventListener("click", () => { if (!G.echanges) return; G.echanges--; G.sac.push(G.courante); G.courante = G.sac.shift(); G.sel = G.courante; G.rot = 0; bip(520); majPanneau(); dessine(); });
