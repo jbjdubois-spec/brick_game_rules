@@ -337,6 +337,15 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
 .j-petits button.icone .ico { width: 26px; height: 26px; display: block; }
 .j-petits button.icone:disabled { color: var(--line); filter: none; }
 @media (max-width: 760px) { .j-petits { flex-direction: row !important; } .j-petits button.icone { min-width: 40px; min-height: 40px; padding: 4px; } .j-petits button.icone .ico { width: 24px; height: 24px; } }
+
+/* en-tête du jeu : Recommencer et Quitter, icône + petit texte */
+.j-haut-boutons { display: flex; gap: 8px; flex-shrink: 0; }
+button.j-mini { display: inline-flex; align-items: center; gap: 6px; margin: 4px; padding: 6px 10px; min-height: 40px; font-size: 9px; }
+button.j-mini .ico-p { width: 16px; height: 16px; flex-shrink: 0; }
+#j-recommencer { color: var(--cyan); }
+#j-recommencer.confirme { background: var(--gold); color: #2A1B00; }
+button.j-mini.quitte { color: var(--pink); }
+@media (max-width: 760px) { button.j-mini { padding: 6px 8px; gap: 5px; font-size: 8px; margin: 3px; } .j-haut-boutons { gap: 4px; } #j-titre { font-size: 10px; } }
 </style>
 <style>body{margin:0}[hidden]{display:none!important}</style>
 </head>
@@ -377,7 +386,10 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
 <div id="jeu" hidden role="dialog" aria-modal="true" aria-labelledby="j-titre">
   <div class="j-haut">
     <h2 id="j-titre">JEU</h2>
-    <button id="j-quitter" aria-label="Quitter le jeu et revenir aux missions">✕ Quitter</button>
+    <div class="j-haut-boutons">
+      <button id="j-recommencer" class="j-mini" aria-label="Recommencer la partie depuis le début"><svg class="ico-p" viewBox="0 0 12 12" aria-hidden="true" fill="currentColor" shape-rendering="crispEdges"><rect x="4" y="1" width="1" height="1"/><rect x="5" y="1" width="1" height="1"/><rect x="6" y="1" width="1" height="1"/><rect x="7" y="1" width="1" height="1"/><rect x="10" y="1" width="1" height="1"/><rect x="2" y="2" width="1" height="1"/><rect x="3" y="2" width="1" height="1"/><rect x="9" y="2" width="1" height="1"/><rect x="10" y="2" width="1" height="1"/><rect x="1" y="3" width="1" height="1"/><rect x="8" y="3" width="1" height="1"/><rect x="9" y="3" width="1" height="1"/><rect x="10" y="3" width="1" height="1"/><rect x="1" y="4" width="1" height="1"/><rect x="1" y="5" width="1" height="1"/><rect x="1" y="6" width="1" height="1"/><rect x="10" y="6" width="1" height="1"/><rect x="1" y="7" width="1" height="1"/><rect x="10" y="7" width="1" height="1"/><rect x="1" y="8" width="1" height="1"/><rect x="10" y="8" width="1" height="1"/><rect x="2" y="9" width="1" height="1"/><rect x="3" y="9" width="1" height="1"/><rect x="8" y="9" width="1" height="1"/><rect x="9" y="9" width="1" height="1"/><rect x="4" y="10" width="1" height="1"/><rect x="5" y="10" width="1" height="1"/><rect x="6" y="10" width="1" height="1"/><rect x="7" y="10" width="1" height="1"/></svg><span id="j-recommencer-txt">Recommencer</span></button>
+      <button id="j-quitter" class="j-mini quitte" aria-label="Quitter le jeu et revenir aux missions"><svg class="ico-p" viewBox="0 0 12 12" aria-hidden="true" fill="currentColor" shape-rendering="crispEdges"><path d="M2 2h2v1h1v1h2V3h1V2h2v2H9v1H8v2h1v1h1v2H8V9H7V8H5v1H4v1H2V8h1V7h1V5H3V4H2z"/></svg><span>Quitter</span></button>
+    </div>
   </div>
   <p id="j-obj"></p>
   <div class="j-corps">
@@ -403,7 +415,6 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
     </div>
     <div class="j-petits">
       <button id="j-annuler" class="icone" aria-label="Annuler la dernière pièce (bouton 4)" title="Annuler"><svg class="ico" viewBox="0 0 12 12" aria-hidden="true" fill="currentColor" shape-rendering="crispEdges"><rect x="3" y="1" width="1" height="1"/><rect x="2" y="2" width="1" height="1"/><rect x="3" y="2" width="1" height="1"/><rect x="1" y="3" width="1" height="1"/><rect x="2" y="3" width="1" height="1"/><rect x="3" y="3" width="1" height="1"/><rect x="4" y="3" width="1" height="1"/><rect x="5" y="3" width="1" height="1"/><rect x="6" y="3" width="1" height="1"/><rect x="7" y="3" width="1" height="1"/><rect x="8" y="3" width="1" height="1"/><rect x="2" y="4" width="1" height="1"/><rect x="3" y="4" width="1" height="1"/><rect x="9" y="4" width="1" height="1"/><rect x="3" y="5" width="1" height="1"/><rect x="10" y="5" width="1" height="1"/><rect x="10" y="6" width="1" height="1"/><rect x="10" y="7" width="1" height="1"/><rect x="9" y="8" width="1" height="1"/><rect x="4" y="9" width="1" height="1"/><rect x="5" y="9" width="1" height="1"/><rect x="6" y="9" width="1" height="1"/><rect x="7" y="9" width="1" height="1"/><rect x="8" y="9" width="1" height="1"/></svg></button>
-      <button id="j-recommencer" class="icone" aria-label="Recommencer la partie" title="Recommencer"><svg class="ico" viewBox="0 0 12 12" aria-hidden="true" fill="currentColor" shape-rendering="crispEdges"><rect x="4" y="1" width="1" height="1"/><rect x="5" y="1" width="1" height="1"/><rect x="6" y="1" width="1" height="1"/><rect x="7" y="1" width="1" height="1"/><rect x="10" y="1" width="1" height="1"/><rect x="2" y="2" width="1" height="1"/><rect x="3" y="2" width="1" height="1"/><rect x="9" y="2" width="1" height="1"/><rect x="10" y="2" width="1" height="1"/><rect x="1" y="3" width="1" height="1"/><rect x="8" y="3" width="1" height="1"/><rect x="9" y="3" width="1" height="1"/><rect x="10" y="3" width="1" height="1"/><rect x="1" y="4" width="1" height="1"/><rect x="1" y="5" width="1" height="1"/><rect x="1" y="6" width="1" height="1"/><rect x="10" y="6" width="1" height="1"/><rect x="1" y="7" width="1" height="1"/><rect x="10" y="7" width="1" height="1"/><rect x="1" y="8" width="1" height="1"/><rect x="10" y="8" width="1" height="1"/><rect x="2" y="9" width="1" height="1"/><rect x="3" y="9" width="1" height="1"/><rect x="8" y="9" width="1" height="1"/><rect x="9" y="9" width="1" height="1"/><rect x="4" y="10" width="1" height="1"/><rect x="5" y="10" width="1" height="1"/><rect x="6" y="10" width="1" height="1"/><rect x="7" y="10" width="1" height="1"/></svg></button>
     </div>
   </div>
   <div id="j-fin" hidden>
@@ -1483,7 +1494,14 @@ button.rond:disabled { filter: grayscale(.8); opacity: .5; }
   elJ("j-tourner").addEventListener("click", tourner);
   elJ("j-annuler").addEventListener("click", annuler);
   function relance(suite) { elJ("j-fin").hidden = true; if (suite) { if (niv < 2) niv++; else { niv = 0; jeu = (jeu + 1) % 5; } maj(false); } nouvellePartie(); majPanneau(); dessine(); }
-  elJ("j-recommencer").addEventListener("click", () => relance(false));
+  // Recommencer demande une confirmation (2e appui dans les 3 secondes) pour ne pas perdre la partie par erreur
+  let confirmeRec = null;
+  elJ("j-recommencer").addEventListener("click", () => {
+    const b = elJ("j-recommencer"), t = elJ("j-recommencer-txt");
+    if (!confirmeRec) { b.classList.add("confirme"); t.textContent = "Sûr ? Appuie encore"; bip(440);
+      confirmeRec = setTimeout(() => { confirmeRec = null; b.classList.remove("confirme"); t.textContent = "Recommencer"; }, 3000); return; }
+    clearTimeout(confirmeRec); confirmeRec = null; b.classList.remove("confirme"); t.textContent = "Recommencer"; relance(false);
+  });
   elJ("j-rejouer").addEventListener("click", () => relance(false));
   elJ("j-suite").addEventListener("click", () => relance(true));
   elJ("j-menu").addEventListener("click", fermeJeu);
