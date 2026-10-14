@@ -427,6 +427,31 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
   .j-joy { width: 88px; height: 88px; } .j-joy-bouton { width: 38px; height: 38px; }
   #j-pieces .j-piece { min-width: 54px; min-height: 48px; }
 }
+
+/* ===== téléphone : plateau calé à gauche, colonne de droite = pièces (en haut) + joystick (en bas) ===== */
+.j-place-joy:empty { display: none; }
+@media (max-width: 760px) {
+  .j-corps { grid-template-columns: auto minmax(110px, 1fr); grid-template-rows: minmax(0, 1fr) auto auto auto;
+    grid-template-areas: "plateau pieces" "plateau joy" "msg msg" "info info"; column-gap: 6px; }
+  #j-zone-plateau { place-items: start; justify-content: start; }
+  .j-place-joy { grid-area: joy; display: grid; place-items: center; padding-top: 4px; }
+  .j-place-joy .j-joy { margin: 0; }
+  #j-pieces { align-items: stretch; }
+  #j-pieces .j-piece { min-width: 0; width: calc(100% - 6px); }
+  .j-commandes { justify-content: flex-start; }
+  #jeu.face { grid-template-columns: auto minmax(110px, 1fr); grid-template-rows: minmax(0, 1fr) auto auto auto auto auto;
+    grid-template-areas: "plateau pieces" "plateau joy" "msg msg" "info info" "cmd cmd" "haut haut"; }
+  #jeu.face .j-place-joy { grid-area: joy; }
+  #jeu.face.j2 { grid-template-columns: minmax(110px, 1fr) auto; grid-template-rows: auto auto auto auto auto minmax(0, 1fr);
+    grid-template-areas: "haut haut" "cmd cmd" "info info" "msg msg" "joy plateau" "pieces plateau"; }
+  #jeu.face.j2 .j-place-joy { transform: rotate(180deg); }
+  #jeu.face.j2 #j-zone-plateau { justify-content: end; place-items: end; }
+}
+
+/* zone d'appui élargie autour du joystick : pas besoin de viser pile */
+.j-joy::after { content: ""; position: absolute; inset: -34px; border-radius: 30%; }
+.j-joy { transition: translate .08s ease-out; z-index: 4; }
+.j-joy.actif { transition: none; box-shadow: 0 0 18px rgba(255,210,63,.35); }
 </style>
 <style>body{margin:0}[hidden]{display:none!important}</style>
 </head>
@@ -479,6 +504,7 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
     <div class="j-cote">
       <p id="j-msg" aria-live="polite"></p>
       <div class="j-defile"><div id="j-pieces" class="j-scroll" role="group" aria-label="Pièces disponibles"></div></div>
+      <div id="j-place-joy" class="j-place-joy"></div>
       <div id="j-info"></div>
       <p class="j-aide-touches">Borne d'arcade : joystick = déplacer · bouton 1 = poser · bouton 2 = tourner · bouton 3 = pièce suivante · bouton 4 = annuler · COIN = menu.<br>Clavier : flèches, Entrée = poser, T = tourner, Espace = pièce suivante, Retour arrière = annuler, Échap = menu.</p>
     </div>
@@ -1136,10 +1162,20 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
   // ---------------- rendu du plateau ----------------
   const cvJ = () => elJ("j-plateau");
   let CEL = 28;
+  const telephone = () => matchMedia("(max-width: 760px)").matches;
+  function placeJoystick() {   // téléphone : dans la colonne à droite du plateau ; ordinateur : avec les boutons
+    const joy = elJ("j-joy"), cible = telephone() ? elJ("j-place-joy") : document.querySelector(".j-commandes");
+    if (joy.parentElement !== cible) cible.appendChild(joy);
+  }
   function dimensionne() {
     const zone = elJ("j-zone-plateau"); if (!zone) return;
+    placeJoystick();
     const r = zone.getBoundingClientRect();
-    CEL = Math.max(8, Math.floor(Math.min((r.width - 8) / W, (r.height - 8) / H)));
+    // téléphone : plateau calé à gauche, la colonne de droite (pièces + joystick) garde au moins 110 px
+    const largeur = telephone() ? elJ("jeu").clientWidth - 16 - 6 - 110 : r.width;
+    const nouv = Math.max(8, Math.floor(Math.min((largeur - 8) / W, (r.height - 8) / H)));
+    if (nouv === CEL && cvJ().style.width) { dessine(); return; }
+    CEL = nouv;
     const c = cvJ(), dpr = Math.min(2, window.devicePixelRatio || 1);
     c.width = W * CEL * dpr; c.height = H * CEL * dpr; c.style.width = W * CEL + "px"; c.style.height = H * CEL + "px";
     c.getContext("2d").setTransform(dpr, 0, 0, dpr, 0, 0); dessine();
@@ -1495,13 +1531,19 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
       e.preventDefault(); st.id = e.pointerId; st.dir = null;
       try { zone.setPointerCapture(e.pointerId); } catch (er) {}
       if (flottant) { const r = zone.getBoundingClientRect(); st.ox = e.clientX; st.oy = e.clientY; base.style.left = (e.clientX - r.left) + "px"; base.style.top = (e.clientY - r.top) + "px"; base.hidden = false; }
-      else { const r = base.getBoundingClientRect(); st.ox = r.left + r.width / 2; st.oy = r.top + r.height / 2; base.classList.add("actif"); }
-      st.dx = st.dy = 0; if (!flottant) vise(e); else montre();
+      else {   // joystick fixe mais « flottant » : on appuie à peu près dessus, il vient se centrer sous le doigt
+        st.translate = ""; base.style.translate = "";
+        const r = base.getBoundingClientRect(), inv = zone.closest("#jeu").classList.contains("j2") ? -1 : 1;
+        st.ox = e.clientX; st.oy = e.clientY;
+        base.style.translate = `${(e.clientX - (r.left + r.width / 2)) * inv}px ${(e.clientY - (r.top + r.height / 2)) * inv}px`;
+        base.classList.add("actif");
+      }
+      st.dx = st.dy = 0; montre();
       requestAnimationFrame(ts => boucleStick(st, ts));
     });
     zone.addEventListener("pointermove", e => { if (e.pointerId === st.id) vise(e); });
     const lache = e => { if (e.pointerId !== st.id) return; st.id = null; st.dir = null; st.dx = st.dy = 0; montre();
-      if (flottant) base.hidden = true; else base.classList.remove("actif"); };
+      if (flottant) base.hidden = true; else { base.classList.remove("actif"); base.style.translate = ""; } };
     zone.addEventListener("pointerup", lache); zone.addEventListener("pointercancel", lache); zone.addEventListener("lostpointercapture", lache);
     return st;
   }
