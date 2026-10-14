@@ -209,6 +209,15 @@ footer { color: var(--muted); font-size: 18px; text-align: center; }
   .lancer button { width: calc(100% - 8px); font-size: 13px; padding: 14px; }
   .lancer button.jouer { font-size: 16px; padding: 20px; }
 }
+/* Commencer + hasard, entre les cartes et les règles */
+.lancer { display: flex !important; flex-wrap: nowrap; gap: 12px; align-items: stretch; justify-content: center; padding: 0; }
+.lancer button { margin: 4px; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.lancer button.jouer { flex: 1 1 auto; max-width: 520px; width: auto !important; font-size: 15px; padding: 18px 16px; }
+.lancer button.hasard { flex: 0 0 auto; width: 64px !important; padding: 0 !important; display: grid; place-items: center; color: var(--cyan); }
+.lancer .ico-hasard { width: 30px; height: 30px; }
+.glisse { display: none !important; }
+@media (max-width: 700px) { .lancer button.jouer { font-size: 14px; padding: 20px 10px; } }
+@media (max-width: 700px) { .c-niv .lib { font-size: 16px; letter-spacing: -0.6px; white-space: nowrap; } }
 /* ===== le jeu jouable : écran plein, plateau à gauche, pièces à droite (en dessous sur téléphone) ===== */
 #jeu { position: fixed; inset: 0; z-index: 50; background: var(--bg); display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; user-select: none; -webkit-user-select: none;
   gap: 8px; padding: max(8px, env(safe-area-inset-top)) 12px max(8px, env(safe-area-inset-bottom));
@@ -478,8 +487,12 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
   <section class="etape" aria-label="Choisis ton jeu et ton niveau">
     <div class="jeux" id="jeux"></div>
     <div class="points" id="points" aria-hidden="true"></div>
-    <p class="glisse">◀ Fais glisser pour changer de jeu ▶</p>
   </section>
+
+  <div class="lancer" id="lancer">
+    <button class="jaune jouer" id="jouer">▶ COMMENCER LE JEU</button>
+    <button class="hasard" id="hasard" aria-label="Mission au hasard" title="Mission au hasard"><svg class="ico-hasard" viewBox="0 0 12 12" aria-hidden="true" fill="currentColor" shape-rendering="crispEdges"><rect x="1" y="3" width="1" height="1"/><rect x="1" y="8" width="1" height="1"/><rect x="2" y="3" width="1" height="1"/><rect x="2" y="8" width="1" height="1"/><rect x="3" y="3" width="1" height="1"/><rect x="3" y="8" width="1" height="1"/><rect x="4" y="4" width="1" height="1"/><rect x="4" y="7" width="1" height="1"/><rect x="5" y="5" width="1" height="1"/><rect x="5" y="6" width="1" height="1"/><rect x="6" y="5" width="1" height="1"/><rect x="6" y="6" width="1" height="1"/><rect x="7" y="4" width="1" height="1"/><rect x="7" y="7" width="1" height="1"/><rect x="8" y="4" width="1" height="1"/><rect x="8" y="7" width="1" height="1"/><rect x="9" y="3" width="1" height="1"/><rect x="9" y="4" width="1" height="1"/><rect x="9" y="5" width="1" height="1"/><rect x="9" y="6" width="1" height="1"/><rect x="9" y="7" width="1" height="1"/><rect x="9" y="8" width="1" height="1"/><rect x="10" y="4" width="1" height="1"/><rect x="10" y="7" width="1" height="1"/></svg></button>
+  </div>
 
   <section class="etape" aria-label="Règles du jeu">
     <article class="mission" id="mission" aria-live="polite"></article>
@@ -491,8 +504,6 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
     <div class="zoom" id="zoom"></div>
     <div class="galerie" id="galerie"></div>
   </section>
-
-  <div class="lancer" id="lancer"></div>
 
 <div id="jeu" hidden role="dialog" aria-modal="true" aria-labelledby="j-titre">
   <div class="j-haut">
@@ -689,10 +700,6 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
       </div>
       <div class="bloc adulte"><h4>POUR L'ADULTE</h4><p>${m.adulte} On apprend : ${j.apprend}</p></div>
       `;
-    $("lancer").innerHTML = `<button class="jaune jouer" id="jouer">▶ COMMENCER LE JEU</button><button id="hasard">Mission au hasard</button>`;
-    $("jouer").addEventListener("click", () => ouvreJeu());
-    $("hasard").addEventListener("click", () => { jeu = Math.floor(Math.random() * 5); niv = Math.floor(Math.random() * 3); bip(520); maj(false);
-      $("mission").scrollIntoView({ behavior: doux(), block: "start" }); });
     if (defile) el.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "nearest" });
   }
 
@@ -931,6 +938,9 @@ button.rond.annule { background: #AE96D4; box-shadow: 0 6px 0 #5E4A8C, inset 0 -
   else requestAnimationFrame(boucle);
   if (document.fonts) document.fonts.ready.then(() => dessine());
 
+  $("jouer").addEventListener("click", () => ouvreJeu());
+  $("hasard").addEventListener("click", () => { let j2, n2; do { j2 = Math.floor(Math.random() * 5); n2 = Math.floor(Math.random() * 3); } while (j2 === jeu && n2 === niv);
+    jeu = j2; niv = n2; bip(520); maj(false); });
   const ouvreJeu = (() => {   // module du jeu, isolé du reste de la page
   // =====================================================================
   //  LE JEU JOUABLE : plateau 10 × 20, pièces, 5 modes × 3 niveaux
