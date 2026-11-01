@@ -649,17 +649,17 @@ button.j-action:disabled { filter: grayscale(.9); opacity: .5; }
           reussi: "10 lignes complètes : la moitié du plateau !", adulte: "Valorisez les explications autant que le résultat." },
       ] },
     { id: "images", nom: "Les images", c: "#7AB536", piece: [[0,0],[1,0],[1,1],[2,1]], but: "Construire une image avec les pièces.",
-      apprend: "inventer, observer une forme, raconter.",
+      apprend: "observer une forme, imaginer comment la remplir, raconter.",
       niveaux: [
         { objectif: "Construis l'image de la carte modèle : toutes les pièces sont dessinées dessus.", pieces: "selon la carte",
           etapes: ["Choisis une carte : maison, sapin, fusée ou bonhomme.", "Trouve les pièces de la carte.", "Pose-les pareil sur le plateau."],
           reussi: "Ton image ressemble à la carte.", adulte: "Une carte à la taille réelle du plateau aide beaucoup au début." },
+        { objectif: "La carte montre le contour de chaque pièce, mais pas sa couleur : trouve quelle pièce va dans chaque forme.", pieces: "celles indiquées sous la carte",
+          etapes: ["Regarde chaque forme dessinée sur la carte.", "Trouve la pièce qui a exactement cette forme.", "Pose-la au même endroit, dans le même sens."],
+          reussi: "Toutes les formes de la carte sont remplies par la bonne pièce.", adulte: "Faites nommer la pièce avant de la poser : « ici, c'est un L couché »." },
         { objectif: "Comme un tangram : la carte montre seulement la forme générale de l'image, sans les traits des pièces. À toi de trouver comment les pièces la remplissent.", pieces: "celles indiquées sous la carte",
           etapes: ["Regarde la forme sur la carte : on ne voit pas où commence ni où finit chaque pièce.", "Prépare les pièces indiquées sous la carte.", "Essaie, tourne, recommence jusqu'à remplir toute la forme."],
-          reussi: "Toute la forme est remplie, sans trou et sans dépasser.", adulte: "Comme au tangram, il y a souvent plusieurs solutions : comparez-les. Pour aider, montrez où va la première pièce." },
-        { objectif: "Invente ton image, puis fais-la deviner aux autres.", pieces: "toutes les pièces",
-          etapes: ["Imagine ce que tu veux construire.", "Construis-le sur le plateau.", "Les autres devinent, puis tu racontes ton image."],
-          reussi: "Les autres ont deviné, ou tu as raconté ton image.", adulte: "Prenez une photo : on peut en faire de nouvelles cartes modèles." },
+          reussi: "Toute la forme est remplie, sans trou et sans dépasser.", adulte: "Comme au tangram, il y a souvent plusieurs solutions : comparez-les. Variante libre : inventez votre propre image et faites-la deviner." },
       ] },
   ];
   const LIB_NIV = ["Facile", "Moyen", "Difficile"];
@@ -772,18 +772,19 @@ button.j-action:disabled { filter: grayscale(.9); opacity: .5; }
   const NOMS = { I: "I", O: "O", T: "T", D: "T doré", S: "S", Z: "Z", J: "J", L: "L" };
   const rot = (c, k) => { let r = c.map(p => p.slice()); for (let i = 0; i < k; i++) r = r.map(([x, z]) => [-z, x]); return r; };
   let filtre = 0, imageChoisie = 0;
-  function svgImage(im, silhouette, grand, recadre) {
+  function svgImage(im, mode, grand, recadre) {   // mode 0 : pièces en couleur · 1 : contours des pièces sans couleur · 2 : tangram
+    const silhouette = mode === 2;
     const S = 10, ox = Math.floor((10 - im.w) / 2), oy = 20 - im.h;
     let vb = `-1 -1 ${10 * S + 2} ${20 * S + 2}`;
     if (recadre) {                         // vignette : le dessin et une case de marge autour
       const x0 = Math.max(0, ox - 1), y0 = Math.max(0, oy - 1), x1 = Math.min(10, ox + im.w + 1), y1 = Math.min(20, oy + im.h + 1);
       vb = `${x0 * S - 1} ${y0 * S - 1} ${(x1 - x0) * S + 2} ${(y1 - y0) * S + 2}`;
     }
-    let out = `<svg viewBox="${vb}" role="img" aria-label="${im.nom}${silhouette ? ", silhouette" : ""}">`;
+    let out = `<svg viewBox="${vb}" role="img" aria-label="${im.nom}${mode === 2 ? ", forme générale" : mode === 1 ? ", contours des pièces" : ""}">`;
     out += `<rect x="0" y="0" width="${10 * S}" height="${20 * S}" fill="#F3F3F0"/>`;
     for (let i = 1; i < 10; i++) out += `<line x1="${i * S}" y1="0" x2="${i * S}" y2="${20 * S}" stroke="#C9CCD1" stroke-width="0.6"/>`;
     for (let j = 1; j < 20; j++) out += `<line x1="0" y1="${j * S}" x2="${10 * S}" y2="${j * S}" stroke="#C9CCD1" stroke-width="0.6"/>`;
-    if (silhouette) {            // niveau ★★, comme un tangram : une seule forme pleine, sans aucun trait de pièce
+    if (silhouette) {            // niveau ★★★, comme un tangram : une seule forme pleine, sans aucun trait de pièce
       const toutes = im.pieces.flatMap(([t, i, j, k]) => rot(CELL[t], k).map(([x, z]) => [ox + i + x, oy + j + z]));
       const set = new Set(toutes.map(c => c.join(",")));
       out += `<path d="${toutes.map(([x, z]) => `M${x * S} ${z * S}h${S}v${S}h-${S}z`).join("")}" fill="#4B4278" stroke="#4B4278" stroke-width="0.4" shape-rendering="crispEdges"/>`;
@@ -795,9 +796,9 @@ button.j-action:disabled { filter: grayscale(.9); opacity: .5; }
     }
     if (!silhouette) im.pieces.forEach(([t, i, j, k]) => {
       const cs = rot(CELL[t], k).map(([x, z]) => [ox + i + x, oy + j + z]), set = new Set(cs.map(c => c.join(",")));
-      const fill = silhouette ? "#6E6596" : COUL[t];
+      const fill = mode === 1 ? "#CFCADF" : COUL[t];
       cs.forEach(([x, z]) => { out += `<rect x="${x * S}" y="${z * S}" width="${S}" height="${S}" fill="${fill}"/>`;
-        if (!silhouette) out += `<rect x="${x * S}" y="${z * S}" width="${S}" height="1.6" fill="rgba(255,255,255,.4)"/>`; });
+        if (mode === 0) out += `<rect x="${x * S}" y="${z * S}" width="${S}" height="1.6" fill="rgba(255,255,255,.4)"/>`; });
       if (!silhouette) {        // contour de chaque pièce : on voit où elle commence et où elle finit
         cs.forEach(([x, z]) => {
           const e = (dx, dz, x1, y1, x2, y2) => { if (!set.has([x + dx, z + dz].join(","))) out += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#1A1433" stroke-width="${grand ? 1.1 : 1.4}" stroke-linecap="square"/>`; };
@@ -813,7 +814,7 @@ button.j-action:disabled { filter: grayscale(.9); opacity: .5; }
   function rendGalerie() {
     const bloc = $("bloc-galerie"); bloc.hidden = JEUX[jeu].id !== "images";
     if (bloc.hidden) return;
-    const sil = niv === 1;                 // niveau ★★ du jeu 5 : silhouette seulement
+    const sil = niv;      // le niveau choisit le dessin des cartes : couleurs, contours, puis tangram                 // niveau ★★ du jeu 5 : silhouette seulement
     $("filtres").innerHTML = `<span>Difficulté :</span>` + [0, 1, 2, 3, 4, 5].map(n =>
       `<button aria-pressed="${n === filtre}" data-f="${n}"><span class="fn">${n === 0 ? "Toutes" : "Niveau " + n}</span><span class="fb">${n === 0 ? IMAGES.length : blocsNiveau(n)}</span></button>`).join("");
     $("filtres").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { filtre = +b.dataset.f; bip(700); rendGalerie(); }));
@@ -830,7 +831,9 @@ button.j-action:disabled { filter: grayscale(.9); opacity: .5; }
       <div class="info">
         <h3>${im.nom}</h3>
         <div class="niv5" style="color:var(--gold)">Difficulté ${blocsNiveau(im.niveau)} · ${im.pieces.length} pièces · ${im.pieces.length * 4} cases</div>
-        <p style="margin:0">${sil ? "Niveau ★★, comme un tangram : on ne voit que la forme générale, pas les pièces. Trouve comment elles la remplissent !" : niv === 2 ? "Niveau ★★★ : inspire-toi de cette image pour inventer la tienne, puis fais-la deviner." : "Niveau ★ : pose chaque pièce à sa place, de la même couleur, dans le même sens. L'image se construit en bas du plateau."}</p>
+        <p style="margin:0">${[ "Niveau ★ : pose chaque pièce à sa place, de la même couleur, dans le même sens. L'image se construit en bas du plateau.",
+          "Niveau ★★ : on voit le contour de chaque pièce, mais pas sa couleur. Trouve quelle pièce va dans chaque forme.",
+          "Niveau ★★★, comme un tangram : on ne voit que la forme générale, pas les pièces. Trouve comment elles la remplissent !" ][sil]}</p>
         <div class="bloc"><h4>PIÈCES À PRÉPARER</h4><div class="liste-pieces">${Object.keys(COUL).filter(t => compte[t]).map(t =>
           `<span>${icone(CELL[t], COUL[t], 7)} ${compte[t]} × ${NOMS[t]}</span>`).join("")}</div></div>
       </div>`;
@@ -1180,13 +1183,15 @@ button.j-action:disabled { filter: grayscale(.9); opacity: .5; }
                         : `Duel face à face : choisis une pièce parmi ${G.nbOffre} et pose-la dans ta moitié. Le premier à 3 lignes gagne.`;
     }
     if (m === "images") {
-      if (n < 2) {
+      {
         G.image = IMAGES[imageChoisie]; const ox = Math.floor((10 - G.image.w) / 2), oy = 20 - G.image.h;
         G.cibles = G.image.pieces.map(([t, i, j, k]) => ({ t, r: k, cs: casesDe(t, ox + i, oy + j, k) }));
         G.zone = new Set(); G.cibles.forEach(c => c.cs.forEach(([x, y]) => G.zone.add(cle(x, y))));
         G.cibles.forEach(c => G.stock[c.t] = (G.stock[c.t] || 0) + 1);
-        OBJ.txt = n === 0 ? `Reconstruis « ${G.image.nom} » : chaque pièce à sa place, de la même couleur.` : `Remplis la silhouette « ${G.image.nom} » avec les pièces proposées.`;
-      } else { G.stock = stockTous(true); OBJ.txt = "Invente ton image avec toutes les pièces, puis appuie sur « J'ai fini »."; }
+        OBJ.txt = [`Reconstruis « ${G.image.nom} » : chaque pièce à sa place, de la même couleur.`,
+          `« ${G.image.nom} » : on voit le contour de chaque pièce, pas sa couleur. Trouve quelle pièce va dans chaque forme.`,
+          `« ${G.image.nom} », comme un tangram : seule la forme générale est visible. Remplis-la avec les pièces proposées.`][n];
+      }
     }
     if (m === "duel") return;            // le duel a déjà choisi ses pièces et son message
     choisirPremier();
@@ -1219,10 +1224,10 @@ button.j-action:disabled { filter: grayscale(.9); opacity: .5; }
       else if (G.niv === 1 && G.courante && !piecesPossibles(G.courante)) dire("Cette pièce ne rentre plus nulle part : utilise « Changer de pièce ».");
     }
     if (m === "copie" && G.poses.length === G.modele.length) verifieCopie();
-    if (m === "images" && G.niv < 2 && G.zone && [...G.zone].every(k => { const [x, y] = k.split(",").map(Number); return G.grille[y][x]; })) {
+    if (m === "images" && G.zone && [...G.zone].every(k => { const [x, y] = k.split(",").map(Number); return G.grille[y][x]; })) {
       if (G.niv === 0) { const ok = G.cibles.every(c => c.cs.every(([x, y]) => G.grille[y][x] && G.grille[y][x].t === c.t));
         ok ? gagne(`« ${G.image.nom} » est terminé, toutes les couleurs sont justes !`) : gagne(`« ${G.image.nom} » est rempli ! Quelques couleurs sont échangées, mais l'image est là.`); }
-      else gagne(`La silhouette « ${G.image.nom} » est remplie. Bravo !`);
+      else gagne(G.niv === 1 ? `Toutes les formes de « ${G.image.nom} » sont remplies. Bravo !` : `La forme « ${G.image.nom} » est entièrement remplie, comme un tangram. Bravo !`);
     }
     majPanneau(); dessine();
   }
@@ -1310,10 +1315,11 @@ button.j-action:disabled { filter: grayscale(.9); opacity: .5; }
       g.fillText(G.modeleVisible ? "MODÈLE" : (G.niv === 2 ? "CONSIGNES ➜" : "MODÈLE CACHÉ"), 6, 6); g.fillText("TA COPIE", 6, 10 * s + 6);
       if (G.modeleVisible) G.modele.forEach(p => { p.cs.forEach(([x, y]) => bloc(g, x, y, PC[p.t].coul, .85)); contour(g, p.cs, "#0B0918", 2); });
     }
-    if (G.cibles) {   // cartes images : pièces à reproduire (niveau 1) ou silhouette (niveau 2)
+    if (G.cibles) {   // cartes images : couleurs (★), contours des pièces (★★), forme générale façon tangram (★★★)
       G.cibles.forEach(cb => {
         if (G.niv === 0) { cb.cs.forEach(([x, y]) => { g.globalAlpha = .28; g.fillStyle = PC[cb.t].coul; g.fillRect(x * s + 1, y * s + 1, s - 2, s - 2); g.globalAlpha = 1; }); contour(g, cb.cs, PC[cb.t].coul, 2); }
-        else cb.cs.forEach(([x, y]) => { g.fillStyle = "#3A3266"; g.fillRect(x * s + 1, y * s + 1, s - 2, s - 2); });
+        else if (G.niv === 1) { cb.cs.forEach(([x, y]) => { g.fillStyle = "#4B4278"; g.fillRect(x * s, y * s, s, s); }); contour(g, cb.cs, "#E8E2FF", 2); }
+        else cb.cs.forEach(([x, y]) => { g.fillStyle = "#3A3266"; g.fillRect(x * s, y * s, s, s); });   // tangram : une seule forme, sans traits
       });
     }
     // pièces posées
@@ -1384,7 +1390,6 @@ button.j-action:disabled { filter: grayscale(.9); opacity: .5; }
     if (m === "copie" && G.niv === 1 && !G.modeleVisible && !G.fini) inf = `<button id="j-revoir" ${G.revoir ? "" : "disabled"}>Revoir le modèle 3 s (${G.revoir})</button>`;
     if (m === "copie" && G.niv === 2) inf = `<ol class="j-consignes">${G.modele.map(pm => `<li><span>${consigne(pm)}</span> <button class="j-voir" data-svg="${pm.t},${pm.r}" aria-label="Voir le dessin">dessin</button></li>`).join("")}</ol>
       <button id="j-ecoute">Écouter les consignes</button>`;
-    if (m === "images" && G.niv === 2 && !G.fini) inf = `<button id="j-fini" class="jaune">J'ai fini !</button>`;
     if (m === "lignes" && G.niv === 2 && !G.fini) inf = `<p class="j-aide">Avant d'appuyer sur POSER, dis à ton coéquipier pourquoi tu mets la pièce là.</p>`;
     info.innerHTML = avantInfo + inf; requestAnimationFrame(majDefile);
     const ech = elJ("j-echange"); if (ech) ech.addEventListener("click", () => { if (!G.echanges) return; G.echanges--; G.sac.push(G.courante); G.courante = G.sac.shift(); G.sel = G.courante; G.rot = 0; bip(520); majPanneau(); dessine(); });
