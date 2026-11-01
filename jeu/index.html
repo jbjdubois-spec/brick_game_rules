@@ -654,9 +654,9 @@ button.j-action:disabled { filter: grayscale(.9); opacity: .5; }
         { objectif: "Construis l'image de la carte modèle : toutes les pièces sont dessinées dessus.", pieces: "selon la carte",
           etapes: ["Choisis une carte : maison, sapin, fusée ou bonhomme.", "Trouve les pièces de la carte.", "Pose-les pareil sur le plateau."],
           reussi: "Ton image ressemble à la carte.", adulte: "Une carte à la taille réelle du plateau aide beaucoup au début." },
-        { objectif: "Sur la carte, on voit seulement la silhouette de l'image : à toi de trouver les pièces.", pieces: "selon la silhouette",
-          etapes: ["Regarde la forme de la silhouette.", "Essaie des pièces pour la remplir.", "Tourne-les jusqu'à ce que ça rentre."],
-          reussi: "La silhouette est entièrement remplie.", adulte: "Plusieurs solutions sont possibles : comparez-les." },
+        { objectif: "Comme un tangram : la carte montre seulement la forme générale de l'image, sans les traits des pièces. À toi de trouver comment les pièces la remplissent.", pieces: "celles indiquées sous la carte",
+          etapes: ["Regarde la forme sur la carte : on ne voit pas où commence ni où finit chaque pièce.", "Prépare les pièces indiquées sous la carte.", "Essaie, tourne, recommence jusqu'à remplir toute la forme."],
+          reussi: "Toute la forme est remplie, sans trou et sans dépasser.", adulte: "Comme au tangram, il y a souvent plusieurs solutions : comparez-les. Pour aider, montrez où va la première pièce." },
         { objectif: "Invente ton image, puis fais-la deviner aux autres.", pieces: "toutes les pièces",
           etapes: ["Imagine ce que tu veux construire.", "Construis-le sur le plateau.", "Les autres devinent, puis tu racontes ton image."],
           reussi: "Les autres ont deviné, ou tu as raconté ton image.", adulte: "Prenez une photo : on peut en faire de nouvelles cartes modèles." },
@@ -783,7 +783,17 @@ button.j-action:disabled { filter: grayscale(.9); opacity: .5; }
     out += `<rect x="0" y="0" width="${10 * S}" height="${20 * S}" fill="#F3F3F0"/>`;
     for (let i = 1; i < 10; i++) out += `<line x1="${i * S}" y1="0" x2="${i * S}" y2="${20 * S}" stroke="#C9CCD1" stroke-width="0.6"/>`;
     for (let j = 1; j < 20; j++) out += `<line x1="0" y1="${j * S}" x2="${10 * S}" y2="${j * S}" stroke="#C9CCD1" stroke-width="0.6"/>`;
-    im.pieces.forEach(([t, i, j, k]) => {
+    if (silhouette) {            // niveau ★★, comme un tangram : une seule forme pleine, sans aucun trait de pièce
+      const toutes = im.pieces.flatMap(([t, i, j, k]) => rot(CELL[t], k).map(([x, z]) => [ox + i + x, oy + j + z]));
+      const set = new Set(toutes.map(c => c.join(",")));
+      out += `<path d="${toutes.map(([x, z]) => `M${x * S} ${z * S}h${S}v${S}h-${S}z`).join("")}" fill="#4B4278" stroke="#4B4278" stroke-width="0.4" shape-rendering="crispEdges"/>`;
+      toutes.forEach(([x, z]) => {   // seulement le contour extérieur de la forme
+        const e = (dx, dz, x1, y1, x2, y2) => { if (!set.has([x + dx, z + dz].join(","))) out += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#1A1433" stroke-width="${grand ? 1.3 : 1.6}" stroke-linecap="square"/>`; };
+        e(0, -1, x * S, z * S, (x + 1) * S, z * S); e(0, 1, x * S, (z + 1) * S, (x + 1) * S, (z + 1) * S);
+        e(-1, 0, x * S, z * S, x * S, (z + 1) * S); e(1, 0, (x + 1) * S, z * S, (x + 1) * S, (z + 1) * S);
+      });
+    }
+    if (!silhouette) im.pieces.forEach(([t, i, j, k]) => {
       const cs = rot(CELL[t], k).map(([x, z]) => [ox + i + x, oy + j + z]), set = new Set(cs.map(c => c.join(",")));
       const fill = silhouette ? "#6E6596" : COUL[t];
       cs.forEach(([x, z]) => { out += `<rect x="${x * S}" y="${z * S}" width="${S}" height="${S}" fill="${fill}"/>`;
@@ -820,7 +830,7 @@ button.j-action:disabled { filter: grayscale(.9); opacity: .5; }
       <div class="info">
         <h3>${im.nom}</h3>
         <div class="niv5" style="color:var(--gold)">Difficulté ${blocsNiveau(im.niveau)} · ${im.pieces.length} pièces · ${im.pieces.length * 4} cases</div>
-        <p style="margin:0">${sil ? "Niveau ★★ : on ne voit que la silhouette. Trouve quelles pièces la remplissent !" : niv === 2 ? "Niveau ★★★ : inspire-toi de cette image pour inventer la tienne, puis fais-la deviner." : "Niveau ★ : pose chaque pièce à sa place, de la même couleur, dans le même sens. L'image se construit en bas du plateau."}</p>
+        <p style="margin:0">${sil ? "Niveau ★★, comme un tangram : on ne voit que la forme générale, pas les pièces. Trouve comment elles la remplissent !" : niv === 2 ? "Niveau ★★★ : inspire-toi de cette image pour inventer la tienne, puis fais-la deviner." : "Niveau ★ : pose chaque pièce à sa place, de la même couleur, dans le même sens. L'image se construit en bas du plateau."}</p>
         <div class="bloc"><h4>PIÈCES À PRÉPARER</h4><div class="liste-pieces">${Object.keys(COUL).filter(t => compte[t]).map(t =>
           `<span>${icone(CELL[t], COUL[t], 7)} ${compte[t]} × ${NOMS[t]}</span>`).join("")}</div></div>
       </div>`;
